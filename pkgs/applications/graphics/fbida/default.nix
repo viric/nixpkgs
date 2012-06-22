@@ -2,6 +2,12 @@
 , pkgconfig, freetype, fontconfig, which, imagemagick, curl, saneBackends
 }:
 
+let
+  commonBuildInputs =
+    [ libexif libjpeg libpng libungif freetype fontconfig libtiff libwebp
+      curl ];
+in
+
 stdenv.mkDerivation rec {
   name = "fbida-2.09";
   
@@ -11,10 +17,8 @@ stdenv.mkDerivation rec {
   };
 
   buildNativeInputs = [ pkgconfig which ];
-  buildInputs =
-    [ libexif libjpeg libpng libungif freetype fontconfig libtiff libwebp
-      imagemagick curl saneBackends
-    ];
+
+  buildInputs = commonBuildInputs ++ [ imagemagick saneBackends ];
   
   makeFlags = [ "prefix=$(out)" "verbose=yes" ];
 
@@ -27,6 +31,7 @@ stdenv.mkDerivation rec {
 
   crossAttrs = {
     makeFlags = makeFlags ++ [ "CC=${stdenv.cross.config}-gcc" "STRIP="];
+    propagatedBuildInputs = commonBuildInputs;
   };
 
   meta = {
