@@ -2069,7 +2069,7 @@ let
     profiledCompiler = false;
   });
 
-  gcj = gcj45;
+  gcj = gcj46;
 
   gcj44 = wrapGCC (gcc44.gcc.override {
     name = "gcj";

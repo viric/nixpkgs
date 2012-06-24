@@ -1,23 +1,23 @@
 { fetchurl, stdenv, unzip, ant, javac, jvm }:
 
 let
-  version = "1.7R2";
+  version = "1.7R3";
   options = "-Dbuild.compiler=gcj";   # FIXME: We assume GCJ here.
 
   xbeans  = fetchurl {
-    url = "http://www.apache.org/dist/xmlbeans/binaries/xmlbeans-2.2.0.zip";
-    sha256 = "1pb08d9j81d0wz5wj31idz198iwhqb7mch872n08jh1354rjlqwk";
+    url = "http://www.apache.org/dist/xmlbeans/binaries/xmlbeans-2.5.0.zip";
+    sha256 = "0j1lmbzncxa4m5wiw659wmdsi725s87kqapg6rakc9qrwxrxx775";
   };
 in
   stdenv.mkDerivation {
     name = "rhino-${version}";
 
     src = fetchurl {
-      url = "ftp://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R2.zip";
-      sha256 = "1p32hkghi6bkc3cf2dcqyaw5cjj7403mykcp0fy8f5bsnv0pszv7";
+      url = "ftp://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip";
+      sha256 = "1ldc7m58xs4g1s3bxqc99cmdkmlpin7f1i8j6ynj7bz59zi4cnw8";
     };
 
-    patches = [ ./gcj-type-mismatch.patch ];
+    # patches = [ ./gcj-type-mismatch.patch ];
 
     preConfigure =
       '' find -name \*.jar -or -name \*.class -exec rm -v {} \;

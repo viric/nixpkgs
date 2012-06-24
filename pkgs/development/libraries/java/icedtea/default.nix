@@ -12,15 +12,14 @@
 
 let
   # These variables must match those in the top-level `Makefile.am'.
-  openjdkVersion   = "b16";
-  openjdkDate      = "24_apr_2009";
-  openjdkURL       =
-    "http://download.java.net/openjdk/jdk6/promoted/${openjdkVersion}/";
-  openjdkSourceZip = "openjdk-6-src-${openjdkVersion}-${openjdkDate}.tar.gz";
+  openjdkVersion   = "b147";
+  openjdkDate      = "27_jun_2011";
+  openjdkURL       = "http://www.java.net/download/openjdk/jdk7/promoted/${openjdkVersion}";
+  openjdkSourceZip = "openjdk-7-fcs-src-${openjdkVersion}-${openjdkDate}.tar.gz";
 
   openjdk          = fetchurl {
     url = "${openjdkURL}${openjdkSourceZip}";
-    sha256 = "084lkhsnj29finb6pmvrh83nqbliwv32gdi5q5sv43dpv24r85cn";
+    sha256 = "1qhwlz9y5qmwmja4qnxg6sn3pgsg1i11fb9j41w8l26acyhk34rs";
   };
 
   hotspot          = fetchurl {
@@ -31,11 +30,11 @@ let
 in
 
 stdenv.mkDerivation rec {
-  name = "icedtea6-1.6.1";
+  name = "icedtea-2.2.1";
 
   src = fetchurl {
     url = "http://icedtea.classpath.org/download/source/${name}.tar.gz";
-    sha256 = "11vaanfmz842x576wrw5qldpkksi8wqjmh9wikn5gxyjk87qq3k5";
+    sha256 = "1dh0lb6pw7w0sjrjwn9iqizhfv5ns5nj2idk98vm0z2gj1is2nqg";
   };
 
   buildInputs = [
@@ -59,8 +58,8 @@ stdenv.mkDerivation rec {
     stdenv.lib.concatStringsSep " "
       [ "--with-gcj-home=${gcj}"
         "--with-ecj" "--with-ecj-jar=${ecj}/lib/java/ecj.jar"
-        "--with-openjdk-src-zip=${openjdk}"
-        "--with-hotspot-src-zip=${hotspot}"
+        #"--with-openjdk-src-zip=${openjdk}"
+        #"--with-hotspot-src-zip=${hotspot}"
         "--with-ant-home=${ant}/lib/java"
         "--with-xalan2-jar=${xalanj}/lib/java/xalan.jar"
         "--with-xalan2-serializer-jar=${xalanj}/lib/java/xalan.jar"
