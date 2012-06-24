@@ -5,8 +5,8 @@ let
   options = "-Dbuild.compiler=gcj";   # FIXME: We assume GCJ here.
 
   xbeans  = fetchurl {
-    url = "http://www.apache.org/dist/xmlbeans/binaries/xmlbeans-2.5.0.zip";
-    sha256 = "0j1lmbzncxa4m5wiw659wmdsi725s87kqapg6rakc9qrwxrxx775";
+    url = "http://archive.apache.org/dist/xmlbeans/binaries/xmlbeans-2.2.0.zip";
+    sha256 = "1pb08d9j81d0wz5wj31idz198iwhqb7mch872n08jh1354rjlqwk";
   };
 in
   stdenv.mkDerivation {
@@ -17,7 +17,7 @@ in
       sha256 = "1ldc7m58xs4g1s3bxqc99cmdkmlpin7f1i8j6ynj7bz59zi4cnw8";
     };
 
-    # patches = [ ./gcj-type-mismatch.patch ];
+    patches = [ ./gcj-type-mismatch.patch ];
 
     preConfigure =
       '' find -name \*.jar -or -name \*.class -exec rm -v {} \;
