@@ -77,14 +77,16 @@ stdenv.mkDerivation rec {
     libxslt lcms2 gtk attr perl
   ];
 
-  preConfigure =
-    '' # Use the Sun-compatible tools (`jar', etc.).
-       export PATH="${gcj.gcc}/lib/jvm/bin:$PATH"
+  preConfigure = ''
+      # Use the Sun-compatible tools (`jar', etc.).
+      export PATH="${gcj.gcc}/lib/jvm/bin:$PATH"
     '';
 
-  #postConfigure = ''
-  #     patchShebangs bootstrap/jdk1.6.0/bin
-  #  '';
+  buildPhase = ''
+      make || true
+      sed -i s,/usr/bin/perl,${perl}/bin/perl, bootstrap/jdk1.6.0/bin/java?
+      make
+    '';
 
   configureFlags =
     stdenv.lib.concatStringsSep " "
@@ -100,7 +102,6 @@ stdenv.mkDerivation rec {
         "--with-jaxws-src-zip=${jaxws}"
         "--with-jdk-home=${gcj.gcc}/lib/jvm"
         "--with-rhino=${rhino}/lib/java/js.jar"
-        "--disable-bootstrap"  # why isn't it an option?
       ];
 
   makeFlags =
