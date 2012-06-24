@@ -8,23 +8,53 @@
 , alsaLib, cups, lesstif, freetype, classpath, libjpeg, libpng, giflib
 , xalanj, xerces, rhino
 , libX11, libXp, libXtst, libXinerama, libXt, libXrender, xproto
-, pkgconfig, xulrunner, pulseaudio }:
+, pkgconfig, xulrunner, pulseaudio, libxslt, lcms2, gtk, attr
+, perl }:
 
 let
   # These variables must match those in the top-level `Makefile.am'.
-  openjdkVersion   = "b147";
-  openjdkDate      = "27_jun_2011";
-  openjdkURL       = "http://www.java.net/download/openjdk/jdk7/promoted/${openjdkVersion}";
-  openjdkSourceZip = "openjdk-7-fcs-src-${openjdkVersion}-${openjdkDate}.tar.gz";
+  baseUrl = "http://icedtea.classpath.org/hg/release/icedtea7-forest-2.2";
+  openjdkChangeset = "0b776ef59474";
+  hotspotChangeset = "889dffcf4a54";
+  corbaChangeset = "38deb372c569";
+  jaxpChangeset = "335fb0b059b7";
+  jaxwsChangeset = "5471e01ef43b";
+  jdkChangeset = "6c3b742b735d";
+  langtoolsChangeset = "beea46c7086b";
 
-  openjdk          = fetchurl {
-    url = "${openjdkURL}${openjdkSourceZip}";
-    sha256 = "1qhwlz9y5qmwmja4qnxg6sn3pgsg1i11fb9j41w8l26acyhk34rs";
+  openjdk = fetchurl {
+    url = "${baseUrl}/archive/${openjdkChangeset}.tar.gz";
+    sha256 = "15a6eab62f5108efbf7937b1de7697bd789971886fc1fc08ee8199e16a5c10fe";
   };
 
-  hotspot          = fetchurl {
-    url = "http://hg.openjdk.java.net/hsx/hsx14/master/archive/09f7962b8b44.tar.gz";
-    sha256 = "1jbd9ki5ip96293mv1qil20yqcgvkmcrhs302j0n8i8f3v1j70bf";
+  hotspot = fetchurl {
+    url = "${baseUrl}/hotspot/archive/${hotspotChangeset}.tar.gz";
+    sha256 = "b29a8929bb4aadbc033e99dca6a381ca6342f0373b9c3f67827bfc025187ba41";
+  };
+
+  corba = fetchurl {
+    url = "${baseUrl}/corba/archive/${corbaChangeset}.tar.gz";
+    sha256 = "b892b0db6f3e4f89fd480d46ecb7c9ce5c71a884ae5bfe953b4bda9eedf7ea93";
+  };
+
+  jaxp = fetchurl {
+    url = "${baseUrl}/jaxp/archive/${jaxpChangeset}.tar.gz";
+    sha256 = "ff4ab3710fe316b7adc4e57d4d21ff967ca20e2ccc5267ac26b93cd22db8b3fd";
+  };
+
+  jaxws = fetchurl {
+    url = "${baseUrl}/jaxws/archive/${jaxwsChangeset}.tar.gz";
+    sha256 = "1ef055749ee46ebf7a5be94403b461d8d32e95c98906da459aeb217a0784ff1d";
+  };
+
+  jdk = fetchurl {
+    url = "${baseUrl}/jdk/archive/${jdkChangeset}.tar.gz";
+    sha256 = "48a513d18c919ec08d44cffdc12ae65f1e8942924c6cfcca5c1ffa8ca38afd0e";
+  };
+
+  langtools = fetchurl {
+    url = "${baseUrl}/langtools/archive/${langtoolsChangeset}.tar.gz";
+    sha256 = "17055cf1490fab1cccc57bf3aa5b32d655c408859790c7f671bfde180ddf70cb";
   };
 
 in
@@ -44,30 +74,33 @@ stdenv.mkDerivation rec {
     xalanj xerces
     libX11 libXp libXtst libXinerama libXt libXrender xproto
     pkgconfig /* xulrunner */ pulseaudio
+    libxslt lcms2 gtk attr perl
   ];
 
   preConfigure =
     '' # Use the Sun-compatible tools (`jar', etc.).
        export PATH="${gcj.gcc}/lib/jvm/bin:$PATH"
-
-       # Copy patches.
-       cp -v "${./nixos-slash-bin.patch}" patches/nixos-slash-bin.patch
     '';
+
+  #postConfigure = ''
+  #     patchShebangs bootstrap/jdk1.6.0/bin
+  #  '';
 
   configureFlags =
     stdenv.lib.concatStringsSep " "
-      [ "--with-gcj-home=${gcj}"
+      [
         "--with-ecj" "--with-ecj-jar=${ecj}/lib/java/ecj.jar"
-        #"--with-openjdk-src-zip=${openjdk}"
-        #"--with-hotspot-src-zip=${hotspot}"
-        "--with-ant-home=${ant}/lib/java"
-        "--with-xalan2-jar=${xalanj}/lib/java/xalan.jar"
-        "--with-xalan2-serializer-jar=${xalanj}/lib/java/xalan.jar"
-        "--with-xerces2-jar=${xerces}/lib/java/xercesImpl.jar"
+        "--with-javac=${ecj}/bin/ecj"
+        "--with-openjdk-src-zip=${openjdk}"
+        "--with-hotspot-src-zip=${hotspot}"
+        "--with-corba-src-zip=${corba}"
+        "--with-jdk-src-zip=${jdk}"
+        "--with-langtools-src-zip=${langtools}"
+        "--with-jaxp-src-zip=${jaxp}"
+        "--with-jaxws-src-zip=${jaxws}"
+        "--with-jdk-home=${gcj.gcc}/lib/jvm"
         "--with-rhino=${rhino}/lib/java/js.jar"
-        "--disable-plugin" # FIXME: Enable it someday.
-
-        "--with-parallel-job"
+        "--disable-bootstrap"  # why isn't it an option?
       ];
 
   makeFlags =
@@ -81,9 +114,6 @@ stdenv.mkDerivation rec {
       "ALT_FREETYPE_LIB_PATH=${freetype}/lib"
       "ALT_CUPS_HEADERS_PATH=${cups}/include"
       "ALT_CUPS_LIB_PATH=${cups}/lib"
-
-      # Tell IcedTea about our patches.
-      "DISTRIBUTION_PATCHES=patches/nixos-slash-bin.patch"
     ];
 
   meta = {
