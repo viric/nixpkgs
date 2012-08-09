@@ -66,4 +66,8 @@ stdenv.mkDerivation rec {
        collision due to the ld/as wrappers/symlinks in the latter. */
     priority = "10";
   };
+
+  passthru = {
+    dtneeded = "--copy-dt-needed-entries";
+  };
 }

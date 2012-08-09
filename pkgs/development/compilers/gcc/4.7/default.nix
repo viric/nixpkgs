@@ -414,6 +414,8 @@ stdenv.mkDerivation ({
   */
   enableParallelBuilding = !profiledCompiler;
 
+  dtneeded = "-Wl,--copy-dt-needed-entries";
+
   meta = {
     homepage = http://gcc.gnu.org/;
     license = "GPLv3+";  # runtime support libraries are typically LGPLv3+

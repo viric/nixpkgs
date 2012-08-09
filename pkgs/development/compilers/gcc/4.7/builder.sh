@@ -6,9 +6,9 @@ mkdir $NIX_FIXINC_DUMMY
 
 
 if test "$staticCompiler" = "1"; then
-    EXTRA_LDFLAGS="-static"
+    EXTRA_LDFLAGS="-static $dtneeded"
 else
-    EXTRA_LDFLAGS=""
+    EXTRA_LDFLAGS="$dtneeded"
 fi
 
 # GCC interprets empty paths as ".", which we don't want.
