@@ -1820,7 +1820,7 @@ let
 
   gambit = callPackage ../development/compilers/gambit { };
 
-  gcc = gcc46;
+  gcc = gcc47;
 
   gcc295 = wrapGCC (import ../development/compilers/gcc/2.95 {
     inherit fetchurl stdenv noSysDirs;
@@ -2903,13 +2903,15 @@ let
 
   bam = callPackage ../development/tools/build-managers/bam {};
 
-  binutils = callPackage ../development/tools/misc/binutils {
+  binutils_2_21 = callPackage ../development/tools/misc/binutils {
     inherit noSysDirs;
   };
 
   binutils_2_22 = callPackage ../development/tools/misc/binutils/2.22.nix {
     inherit noSysDirs;
   };
+
+  binutils = binutils_2_22;
 
   binutils_gold = callPackage ../development/tools/misc/binutils {
     inherit noSysDirs;
