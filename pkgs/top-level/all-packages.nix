@@ -2907,6 +2907,10 @@ let
     inherit noSysDirs;
   };
 
+  binutils_2_22 = callPackage ../development/tools/misc/binutils/2.22.nix {
+    inherit noSysDirs;
+  };
+
   binutils_gold = callPackage ../development/tools/misc/binutils {
     inherit noSysDirs;
     gold = true;
