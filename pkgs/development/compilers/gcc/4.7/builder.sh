@@ -123,6 +123,7 @@ if test "$noSysDirs" = "1"; then
         FLAGS_FOR_TARGET="$EXTRA_TARGET_CFLAGS $EXTRA_TARGET_LDFLAGS" \
         LDFLAGS_FOR_BUILD="$EXTRA_FLAGS $EXTRA_LDFLAGS" \
         LDFLAGS_FOR_TARGET="$EXTRA_TARGET_LDFLAGS $EXTRA_TARGET_LDFLAGS" \
+        LDFLAGS="$EXTRA_LDFLAGS" \
         )
 
     if test -z "$targetConfig"; then
