@@ -1,5 +1,5 @@
 diff --git a/gcc/vhdl/Make-lang.in b/gcc/vhdl/Make-lang.in
-index e9c9b23..4fee680 100644
+index e9c9b23..f65cb3b 100644
 --- a/gcc/vhdl/Make-lang.in
 +++ b/gcc/vhdl/Make-lang.in
 @@ -120,7 +120,7 @@ AGCC_OBJS := $(AGCC_LOCAL_OBJS) \
@@ -11,3 +11,12 @@ index e9c9b23..4fee680 100644
  
  agcc-clean: force
  	$(RM) -f $(agcc_objdir)/*.o
+@@ -141,7 +141,7 @@ ghdl1$(exeext): $(AGCC_OBJS) $(AGCC_DEPS) force
+ 	 -cargs $(CFLAGS) $(GHDL_ADAFLAGS)
+ 	$(GNATMAKE) -o $@ -aI$(srcdir)/vhdl -aOvhdl ortho_gcc-main \
+ 	 -bargs -E -cargs $(CFLAGS) $(GHDL_ADAFLAGS) \
+-	 -largs $(AGCC_OBJS) $(LIBS) $(GMPLIBS) -lmpc -lmpfr -lgmp -ldl -lz
++	 -largs $(AGCC_OBJS) $(LIBS) $(EXTRA_GCC_LIBS)
+ 
+ # The driver for ghdl.
+ ghdl$(exeext): force
