@@ -61,6 +61,8 @@ let version = "4.7.2";
       # target libraries and tools.
       ++ optional langAda ./gnat-cflags.patch
       ++ optional langFortran ./gfortran-driving.patch
+      ++ optional langVhdl ./ghdl_gcc47_patch
+      ++ optional langVhdl ./ghdl-includes.patch
       ++ optional (stdenv.isGNU || crossGNU) ./hurd-sigrtmin.patch;
 
     javaEcj = fetchurl {
@@ -412,7 +414,7 @@ stdenv.mkDerivation ({
      "parallel make is currently not supported since collisions in profile
      collecting may occur"
   */
-  enableParallelBuilding = !profiledCompiler;
+  enableParallelBuilding = false;
 
   meta = {
     homepage = http://gcc.gnu.org/;
@@ -441,6 +443,40 @@ stdenv.mkDerivation ({
     platforms = stdenv.lib.platforms.linux ++ optionals (langAda == false && libelf == null) [ "i686-darwin" ];
   };
 }
+// (if langVhdl then rec {
+  name = "ghdl-0.29";
+
+  ghdlSrc = fetchurl {
+    url = "http://ghdl.free.fr/ghdl-0.29.tar.bz2";
+    sha256 = "15mlinr1lwljwll9ampzcfcrk9bk0qpdks1kxlvb70xf9zhh2jva";
+  };
+
+  # Ghdl has some timestamps checks, storing file timestamps in '.cf' files.
+  # As we will change the timestamps to 1970-01-01 00:00:01, we also set the
+  # content of that .cf to that value. This way ghdl does not complain on
+  # the installed object files from the basic libraries (ieee, ...)
+  postInstallGhdl = ''
+    pushd $out
+    find . -name "*.cf" -exec \
+        sed 's/[0-9]*\.000" /19700101000001.000" /g' -i {} \;
+    popd
+  '';
+
+  postUnpack = ''
+    tar xvf ${ghdlSrc}
+    mv ghdl-*/vhdl gcc*/gcc
+    rm -Rf ghdl-*
+  '';
+
+  meta = {
+    homepage = "http://ghdl.free.fr/";
+    license = "GPLv2+";
+    description = "Complete VHDL simulator, using the GCC technology (gcc ${version})";
+    maintainers = with stdenv.lib.maintainers; [viric];
+    platforms = with stdenv.lib.platforms; linux;
+  };
+
+} else {})
 
 // optionalAttrs (cross != null && cross.libc == "msvcrt" && crossStageStatic) {
   makeFlags = [ "all-gcc" "all-target-libgcc" ];

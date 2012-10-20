@@ -2277,6 +2277,24 @@ let
     enableMultilib = false;
   }));
 
+  # Not officially supported version for ghdl
+  ghdl_gcc47 = lowPrio (wrapGCC (callPackage ../development/compilers/gcc/4.7 {
+    inherit noSysDirs;
+    name = "ghdl";
+    langVhdl = true;
+    langCC = false;
+    langC = false;
+    profiledCompiler = false;
+    enableMultilib = false;
+
+    cross = null;
+    libcCross = if crossSystem != null then libcCross else null;
+    libpthreadCross =
+      if crossSystem != null && crossSystem.config == "i586-pc-gnu"
+      then gnu.libpthreadCross
+      else null;
+  }));
+
   gcl = builderDefsPackage ../development/compilers/gcl {
     inherit mpfr m4 binutils fetchcvs emacs zlib which
       texinfo;

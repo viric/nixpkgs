@@ -1,0 +1,1146 @@
+diff -u -r 0.29/ghdl-0.29/vhdl/config-lang.in gcc-4.7.2/gcc/vhdl/config-lang.in
+--- 0.29/ghdl-0.29/vhdl/config-lang.in	2012-09-28 12:12:29.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/config-lang.in	2012-10-09 17:43:23.112660740 +0100
+@@ -29,6 +29,8 @@
+ language="vhdl"
+ boot_language=no
+ 
++build_by_default=no
++
+ compilers="ghdl1\$(exeext)"
+ 
+ stagestuff="ghdl\$(exeext) ghdl1\$(exeext)"
+diff -u -r 0.29/ghdl-0.29/vhdl/ghdldrv/ghdldrv.adb gcc-4.7.2/gcc/vhdl/ghdldrv/ghdldrv.adb
+--- 0.29/ghdl-0.29/vhdl/ghdldrv/ghdldrv.adb	2012-09-28 12:12:28.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/ghdldrv/ghdldrv.adb	2012-10-16 18:32:26.275340311 +0100
+@@ -561,7 +561,7 @@
+       Setup_Libraries (Load);
+       for I in 2 .. Get_Nbr_Pathes loop
+          Add_Argument (Compiler_Args,
+-                       new String'("-P" & Image (Get_Path (I))));
++                       new String'("-LP" & Image (Get_Path (I))));
+       end loop;
+    end Setup_Compiler;
+ 
+@@ -894,7 +894,7 @@
+    begin
+       Comp_List (1) := new String'("--anaelab");
+       Comp_List (2) := Unit_Name;
+-      Flag_C := new String'("-c");
++      Flag_C := new String'("-ec");
+       Index := 3;
+       for I in Files'Range loop
+          Comp_List (Index) := Flag_C;
+@@ -1075,7 +1075,7 @@
+          Base_Name := new String'(Prim_Name.all & '-' & Sec_Name.all);
+       end if;
+       if not Is_Regular_File (Base_Name.all & Nul) then
+-         Error ("file '" & Base_Name.all & "' does not exists");
++         Error ("file '" & Base_Name.all & "' does not exist");
+          Error ("Please elaborate your design.");
+          raise Exec_Error;
+       end if;
+@@ -1248,14 +1248,14 @@
+    is
+       pragma Unreferenced (Cmd);
+    begin
+-      return Name = "-c";
++      return Name = "-ec";
+    end Decode_Command;
+ 
+    function Get_Short_Help (Cmd : Command_Anaelab) return String
+    is
+       pragma Unreferenced (Cmd);
+    begin
+-      return "-c [OPTS] FILEs -e UNIT [ARCH]  "
++      return "-ec [OPTS] FILEs -e UNIT [ARCH]  "
+         & "Generate whole code to elab UNIT from FILEs";
+    end Get_Short_Help;
+ 
+@@ -1290,7 +1290,7 @@
+          Analyze_Files (Args, True);
+       else
+          Flags.Flag_Whole_Analyze := True;
+-         Set_Elab_Units ("-c", Args (Elab_Index + 1 .. Args'Last));
++         Set_Elab_Units ("-ec", Args (Elab_Index + 1 .. Args'Last));
+          Setup_Compiler (False);
+ 
+          Bind_Anaelab (Args (Args'First .. Elab_Index - 1));
+@@ -1653,7 +1653,7 @@
+                  or else (Arg'Length > 7 and then Arg (1 .. 7) = "--ieee=")
+                  or else (Arg'Length > 6 and then Arg (1 .. 6) = "--std=")
+                  or else (Arg'Length > 7 and then Arg (1 .. 7) = "--work=")
+-                 or else (Arg'Length > 2 and then Arg (1 .. 2) = "-P")
++                 or else (Arg'Length > 3 and then Arg (1 .. 3) = "-LP")
+                then
+                   Put (" ");
+                   Put (Arg);
+diff -u -r 0.29/ghdl-0.29/vhdl/ghdldrv/ghdllocal.adb gcc-4.7.2/gcc/vhdl/ghdldrv/ghdllocal.adb
+--- 0.29/ghdl-0.29/vhdl/ghdldrv/ghdllocal.adb	2012-09-28 12:12:28.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/ghdldrv/ghdllocal.adb	2012-10-16 15:30:35.016006660 +0100
+@@ -160,7 +160,7 @@
+       P ("Main options (try --options-help for details):");
+       P (" --std=XX       Use XX as VHDL standard (87,93c,93,00 or 02)");
+       P (" --work=NAME    Set the name of the WORK library");
+-      P (" -PDIR          Add DIR in the library search path");
++      P (" -LPDIR         Add DIR in the library search path");
+       P (" --workdir=DIR  Specify the directory of the WORK library");
+       P (" --PREFIX=DIR   Specify installation prefix");
+       P (" --ieee=NAME    Use NAME as ieee library, where name is:");
+diff -u -r 0.29/ghdl-0.29/vhdl/ghdldrv/ghdllocal.ads gcc-4.7.2/gcc/vhdl/ghdldrv/ghdllocal.ads
+--- 0.29/ghdl-0.29/vhdl/ghdldrv/ghdllocal.ads	2012-09-28 12:12:28.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/ghdldrv/ghdllocal.ads	2012-10-16 14:26:31.455674558 +0100
+@@ -27,6 +27,7 @@
+ 
+    --  Handle:
+    --  --std=xx, --work=xx, -Pxxx, --workdir=x, --ieee=x, -Px, and -v
++   --  -Px renamed -LPx to resolve clash with "Do not generate #line directives"
+    procedure Decode_Option (Cmd : in out Command_Lib;
+                             Option : String;
+                             Arg : String;
+diff -u -r 0.29/ghdl-0.29/vhdl/ghdl.texi gcc-4.7.2/gcc/vhdl/ghdl.texi
+--- 0.29/ghdl-0.29/vhdl/ghdl.texi	2012-09-28 12:12:25.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/ghdl.texi	2012-10-10 15:20:11.362951211 +0100
+@@ -11,7 +11,7 @@
+ @titlepage
+ @title GHDL guide
+ @subtitle GHDL, a VHDL compiler
+-@subtitle For GHDL version 0.29 (Sokcho edition)
++@subtitle For GHDL version 0.30 (Dunoon edition)
+ @author Tristan Gingold
+ @c The following two commands start the copyright page.
+ @page
+diff -u -r 0.29/ghdl-0.29/vhdl/lang.opt gcc-4.7.2/gcc/vhdl/lang.opt
+--- 0.29/ghdl-0.29/vhdl/lang.opt	2012-09-28 12:12:32.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/lang.opt	2012-10-16 18:32:45.140018692 +0100
+@@ -1,66 +1,87 @@
+-Language
+-vhdl
++; Options for the VHDL front end.
+ 
+--std=
+-vhdl Joined
+-Select the vhdl standard
++; See the GCC internals manual for a description of this file's format.
+ 
+--compile-standard
++; Please try to keep this file in ASCII collating order.
++; That means, all the -- options first, then capitals, then lc...
++
++Language
+ vhdl
+-Used during compiler build to compile the std.standard package
++
++-anaelab
++vhdl Separate
++--anaelab <name>	Used internally during elaboration of <name>
+ 
+ -bootstrap
+ vhdl
+ Used during compiler build to compile std packages
+ 
+--work=
+-vhdl Joined
+-Set the name of the work library
+-
+--workdir=
+-vhdl Joined
+-Set the directory of the work library
+-
+-P
+-vhdl Joined
+--P<dir>	Add <dir> to the end of the vhdl library path
++-compile-standard
++vhdl
++Used during compiler build to compile the std.standard package
+ 
+ -elab
+ vhdl Separate
+ --elab <name>	Used internally during elaboration of <name>
+ 
+--anaelab
+-vhdl Separate
+---anaelab <name>	Used internally during elaboration of <name>
+-
+-c
+-vhdl Separate
+--c <filename>	Analyze <filename> for --anaelab
+-
+-v
++-expect-failure
+ vhdl
+-Verbose
+-
+--warn-
+-vhdl Joined
+---warn-<name>	Warn about <name>
++Expect a compiler error (used for testsuite)
+ 
+ -ghdl
+ vhdl Joined
+ --ghdl-<option>	Pass <option> to vhdl front-end
+ 
+--expect-failure
++-mb-comments
+ vhdl
+-Expect a compiler error (used for testsuite)
++Allow any character in comments
++
++-no-direct-drivers
++vhdl
++Disable direct drivers optimization
+ 
+ -no-vital-checks
+ vhdl
+ Disable VITAL checks
+ 
++-std=
++vhdl Joined
++Select the vhdl standard
++
++-syn-binding
++vhdl
++Use synthetizer rules for default bindings
++
+ -vital-checks
+ vhdl
+ Enable VITAL checks
+ 
++-warn-
++vhdl Joined
++--warn-<name>	Warn about <name>
++
++-work=
++vhdl Joined
++Set the name of the work library
++
++-workdir=
++vhdl Joined
++Set the directory of the work library
++
++C
++vhdl
++; documented elsewhere , was: Allow any character in comments
++
++LP
++vhdl Joined
++-LP<dir>	Add <dir> to the end of the vhdl library path
++; changed from -P because of clash with -P "Do not generate #line directives"
++
++ec
++vhdl Target Separate
++-ec <filename>	Analyze <filename> for --anaelab
++; changed from -c because of clash with -c "compile" option
++
+ fexplicit
+ vhdl
+ Explicit function declarations override implicit one in use
+@@ -69,22 +90,12 @@
+ vhdl
+ Allow PSL asserts in comments
+ 
+--no-direct-drivers
+-vhdl
+-Disable direct drivers optimization
+-
+--syn-binding
+-vhdl
+-Use synthetizer rules for default bindings
+-
+ l
+-vhdl Joined Separate
++vhdl Target Joined
+ -l<filename>	Put list of files for link in <filename>
+ 
+-C
+-vhdl
+-Allow any character in comments
++v
++vhdl 
++; documented elsewhere , was: Verbose
+ 
+--mb-comments
+-vhdl
+-Allow any character in comments
++; All the other lang.opt files have a comment here. Assume there's a reason for it...
+Only in 0.29/ghdl-0.29/vhdl: lang-options.h
+diff -u -r 0.29/ghdl-0.29/vhdl/Makefile.in gcc-4.7.2/gcc/vhdl/Makefile.in
+--- 0.29/ghdl-0.29/vhdl/Makefile.in	2012-09-28 12:15:22.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/Makefile.in	2012-10-17 16:57:42.530116592 +0100
+@@ -181,7 +181,10 @@
+ ../ghdl$(exeext): drvdir drvdir/default_pathes.ads force
+ 	CURDIR=`pwd`; cd $(srcdir); SRCDIR=`pwd`; cd $$CURDIR/drvdir; \
+ 	$(GNATMAKE) -o ../$@ -aI$$SRCDIR/ghdldrv -aI$$SRCDIR -aO.. ghdl_gcc \
+-	 -bargs -E -cargs $(ADA_CFLAGS) $(GHDL_ADAFLAGS) -largs $(LIBS)
++	 -bargs -E -cargs $(ADA_CFLAGS) $(GHDL_ADAFLAGS) -largs $(LIBS) \
++	-largs ../../vec.o -largs ../../ggc-none.o -largs ../../diagnostic.o \
++	-largs ../../input.o -largs ../../pretty-print.o -largs ../../intl.o \
++	-largs ../../version.o -largs ../../../libcpp/libcpp.a -largs -liberty
+ 
+ drvdir:
+ 	mkdir $@
+@@ -190,7 +193,7 @@
+ 	$(RM) *.o *.ali
+ 	$(RM) default_pathes.ads
+ 
+-# Additionnal rules
++# Additional rules
+ 
+ LIB93_DIR:=./lib/v93
+ LIB87_DIR:=./lib/v87
+@@ -306,7 +309,8 @@
+ 	done; \
+ 	cd $$prev
+ 
+-ANALYZE_IEEE93=$(ANALYZE93) -P../std --work=ieee
++ANALYZE_IEEE93=$(ANALYZE93) -LP../std --work=ieee
++#  -Px renamed -LPx to resolve clash with "Do not generate #line directives"
+ 
+ ieee.v93: $(LIB93_DIR) $(IEEE93_SRCS) force
+ 	$(RM) -rf $(IEEE93_DIR)
+@@ -357,7 +361,8 @@
+ 	done; \
+ 	cd $$prev
+ 
+-ANALYZE_IEEE87=$(ANALYZE87) -P../std --work=ieee
++ANALYZE_IEEE87=$(ANALYZE87) -LP../std --work=ieee
++#  -Px renamed -LPx to resolve clash with "Do not generate #line directives"
+ 
+ ieee.v87: $(LIB87_DIR) $(IEEE87_SRCS) force
+ 	$(RM) -rf $(IEEE87_DIR)
+diff -u -r 0.29/ghdl-0.29/vhdl/Make-lang.in gcc-4.7.2/gcc/vhdl/Make-lang.in
+--- 0.29/ghdl-0.29/vhdl/Make-lang.in	2012-09-28 12:15:22.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/Make-lang.in	2012-10-16 17:05:38.983341720 +0100
+@@ -103,6 +103,15 @@
+ AGCC_DEPS := $(AGCC_LOCAL_OBJS)
+ AGCC_OBJS := $(AGCC_LOCAL_OBJS) \
+ 	$(AGCC_GCCOBJ_DIR)gcc/toplev.o \
++	$(AGCC_GCCOBJ_DIR)gcc/vec.o \
++	$(AGCC_GCCOBJ_DIR)gcc/hooks.o \
++	$(AGCC_GCCOBJ_DIR)gcc/dwarf2out.o \
++	$(AGCC_GCCOBJ_DIR)gcc/params.o \
++	$(AGCC_GCCOBJ_DIR)gcc/opts-common.o \
++	$(AGCC_GCCOBJ_DIR)gcc/opts.o \
++	$(AGCC_GCCOBJ_DIR)gcc/i386-common.o \
++	$(AGCC_GCCOBJ_DIR)gcc/common/common-targhooks.o \
++	$(AGCC_GCCOBJ_DIR)gcc/options.o \
+ 	$(AGCC_GCCOBJ_DIR)gcc/attribs.o \
+ 	$(AGCC_GCCOBJ_DIR)gcc/libbackend.a \
+ 	$(AGCC_GCCOBJ_DIR)libcpp/libcpp.a \
+@@ -132,7 +141,7 @@
+ 	 -cargs $(CFLAGS) $(GHDL_ADAFLAGS)
+ 	$(GNATMAKE) -o $@ -aI$(srcdir)/vhdl -aOvhdl ortho_gcc-main \
+ 	 -bargs -E -cargs $(CFLAGS) $(GHDL_ADAFLAGS) \
+-	 -largs $(AGCC_OBJS) $(LIBS) $(GMPLIBS)
++	 -largs $(AGCC_OBJS) $(LIBS) $(GMPLIBS) -lmpc -lmpfr -lgmp -ldl -lz
+ 
+ # The driver for ghdl.
+ ghdl$(exeext): force
+@@ -194,6 +203,8 @@
+ 
+ vhdl.install-man: $(DESTDIR)$(man1dir)/ghdl$(man1ext)
+ 
++vhdl.install-plugin:
++
+ $(DESTDIR)$(man1dir)/ghdl$(man1ext): $(srcdir)/vhdl/ghdl.1
+ 	-rm -f $@
+ 	-$(INSTALL_DATA) $< $@
+diff -u -r 0.29/ghdl-0.29/vhdl/options.adb gcc-4.7.2/gcc/vhdl/options.adb
+--- 0.29/ghdl-0.29/vhdl/options.adb	2012-09-28 12:12:35.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/options.adb	2012-10-16 14:28:32.407677223 +0100
+@@ -89,8 +89,11 @@
+          else
+             return False;
+          end if;
+-      elsif Opt'Length > 2 and then Opt (Beg .. Beg + 1) = "-P" then
+-         Libraries.Add_Library_Path (Opt (Beg + 2 .. Opt'Last));
++      --elsif Opt'Length > 2 and then Opt (Beg .. Beg + 1) = "-P" then
++      --   Libraries.Add_Library_Path (Opt (Beg + 2 .. Opt'Last));
++      elsif Opt'Length > 3 and then Opt (Beg .. Beg + 2) = "-LP" then
++         Libraries.Add_Library_Path (Opt (Beg + 3 .. Opt'Last));
++      --  -Px renamed -LPx to resolve clash with "Do not generate #line directives"
+       elsif Opt'Length > 10 and then Opt (Beg .. Beg + 9) = "--workdir=" then
+          Libraries.Set_Work_Library_Path (Opt (Beg + 10 .. Opt'Last));
+       elsif Opt'Length > 10 and then Opt (Beg .. Beg + 9) = "--warn-no-" then
+diff -u -r 0.29/ghdl-0.29/vhdl/ortho_front.adb gcc-4.7.2/gcc/vhdl/ortho_front.adb
+--- 0.29/ghdl-0.29/vhdl/ortho_front.adb	2012-09-28 12:12:30.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/ortho_front.adb	2012-10-16 18:49:22.835018627 +0100
+@@ -164,14 +164,14 @@
+          end if;
+          Action := Action_Anaelab;
+          return Decode_Elab_Option (Arg);
+-      elsif Opt.all = "-c" then
++      elsif Opt.all = "-ec" then
+          if Action /= Action_Anaelab then
+             Error_Msg_Option
+-              ("-c option allowed only after --anaelab options");
++              ("-ec option allowed only after --anaelab options");
+             return 0;
+          end if;
+          if Arg = null then
+-            Error_Msg_Option ("filename required after -c");
++            Error_Msg_Option ("filename required after -ec");
+             return 0;
+          end if;
+          declare
+@@ -187,14 +187,20 @@
+             Anaelab_Files_Last := L;
+          end;
+          return 2;
+-      elsif Opt.all = "-l" then
++      elsif Opt(1..2) = "-l" then
+          if Arg = null then
+-            Error_Msg_Option ("filename required after -l");
+-         end if;
+-         if Elab_Filelist /= null then
+-            Error_Msg_Option ("several -l options");
++            -- gcc4.7 doesn't separate option from argument for -l. Workaround here...
++            if Opt'Length > 2 then
++               Elab_Filelist := new String'(Opt (3 .. Opt'Last));
++            else
++               Error_Msg_Option ("filename required after -l");
++            end if;
+          else
+-            Elab_Filelist := new String'(Arg.all);
++            if Elab_Filelist /= null then
++               Error_Msg_Option ("several -l options");
++            else
++               Elab_Filelist := new String'(Arg.all);
++            end if;
+          end if;
+          return 2;
+       elsif Opt.all = "--help" then
+diff -u -r 0.29/ghdl-0.29/vhdl/ortho_gcc.ads gcc-4.7.2/gcc/vhdl/ortho_gcc.ads
+--- 0.29/ghdl-0.29/vhdl/ortho_gcc.ads	2012-09-28 12:12:32.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/ortho_gcc.ads	2012-10-12 15:06:21.713916134 +0100
+@@ -520,7 +520,8 @@
+ 
+    type O_Assoc_List is record
+       Subprg : Tree;
+-      List : List_Constr_Type;
++--      List : List_Constr_Type;
++      List : System.Address;
+    end record;
+    pragma Convention (C, O_Assoc_List);
+ 
+diff -u -r 0.29/ghdl-0.29/vhdl/ortho-lang.c gcc-4.7.2/gcc/vhdl/ortho-lang.c
+--- 0.29/ghdl-0.29/vhdl/ortho-lang.c	2012-09-28 12:12:32.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/ortho-lang.c	2012-10-17 17:14:16.518114068 +0100
+@@ -15,19 +15,20 @@
+ #include "opts.h"
+ #include "options.h"
+ #include "real.h"
+-#include "tree-gimple.h"
++#include "gimple.h"
+ #include "function.h"
+ #include "cgraph.h"
+ #include "target.h"
+ #include "convert.h"
+ #include "tree-pass.h"
+ #include "tree-dump.h"
++#include "tree-iterator.h"
+ 
+ static tree type_for_size (unsigned int precision, int unsignedp);
+ 
+ const int tree_identifier_size = sizeof (struct tree_identifier);
+ 
+-struct binding_level GTY(())
++struct GTY(()) binding_level 
+ {
+   /*  The BIND_EXPR node for this binding.  */
+   tree bind;
+@@ -56,7 +57,7 @@
+ /*  Chain of unused binding levels.  */
+ static GTY(()) struct binding_level *old_binding_levels = NULL;
+ 
+-static tree cur_stmts = NULL_TREE;
++static GTY(()) tree cur_stmts = NULL_TREE;
+ 
+ static void
+ push_binding (void)
+@@ -64,7 +65,7 @@
+   struct binding_level *res;
+ 
+   if (old_binding_levels == NULL)
+-    res = (struct binding_level *) ggc_alloc (sizeof (struct binding_level));
++    res = ggc_alloc_binding_level();
+   else
+     {
+       res = old_binding_levels;
+@@ -93,7 +94,8 @@
+       if (cur_binding_level->first_block == NULL)
+ 	cur_binding_level->first_block = res->block;
+       else
+-	TREE_CHAIN (cur_binding_level->last_block) = res->block;
++	BLOCK_CHAIN (cur_binding_level->last_block) = res->block;
++        /* TREE_CHAIN no longer works for blocks or statement lists */
+       cur_binding_level->last_block = res->block;
+ 
+       BLOCK_SUPERCONTEXT (res->block) = cur_binding_level->block;
+@@ -131,24 +133,30 @@
+       tree save_call;
+       tree restore;
+       tree t;
++      VEC(tree,gc) *vars = NULL;
+ 
+       /* Create an artificial var to save the stack pointer.  */
+-      tmp_var = build_decl (VAR_DECL, NULL, ptr_type_node);
++      tmp_var = build_decl (UNKNOWN_LOCATION, VAR_DECL, NULL, ptr_type_node);
+       DECL_ARTIFICIAL (tmp_var) = true;
+       DECL_IGNORED_P (tmp_var) = true;
+       TREE_USED (tmp_var) = true;
+       push_decl (tmp_var);
+ 
+-      /* Create the save stmt.  */
+-      save_call = build_function_call_expr
+-	(implicit_built_in_decls[BUILT_IN_STACK_SAVE], NULL_TREE);
++      /* Create the save stmt.  
++             * build_function_call_expr was removed with patch 57962
++             *   http://patchwork.ozlabs.org/patch/57962/
++             nearest replacement is build_call_expr_loc_vec  */
++      save_call = build_call_expr_loc_vec (UNKNOWN_LOCATION, 
++                    builtin_decl_implicit (BUILT_IN_STACK_SAVE), NULL);
++
+       save = build2 (MODIFY_EXPR, ptr_type_node, tmp_var, save_call);
+       TREE_SIDE_EFFECTS (save) = true;
+ 
+-      /* Create the restore stmt.  */
+-      restore = build_function_call_expr
+-	(implicit_built_in_decls[BUILT_IN_STACK_RESTORE],
+-	 tree_cons (NULL_TREE, tmp_var, NULL_TREE));
++      /* Create the restore stmt. 
++         Changed as above  */
++      VEC_safe_push(tree, gc, vars, tmp_var);
++      restore = build_call_expr_loc_vec (UNKNOWN_LOCATION, 
++                    builtin_decl_implicit (BUILT_IN_STACK_RESTORE), vars);
+ 
+       /* Build a try-finally block.
+ 	 The statement list is the block of current statements.  */
+@@ -190,21 +198,20 @@
+   append_to_statement_list (stmt, &cur_stmts);
+ }
+ 
++/* This is a stack of current statement_lists  */
++static GTY(()) VEC_tree_gc * stmt_list_stack;
++
+ static void
+ push_stmts (tree stmts)
+ {
+-  TREE_CHAIN (stmts) = cur_stmts;
++  VEC_safe_push (tree, gc, stmt_list_stack, cur_stmts);
+   cur_stmts = stmts;
+ }
+ 
+ static void
+ pop_stmts (void)
+ {
+-  tree prev;
+-
+-  prev = cur_stmts;
+-  cur_stmts = TREE_CHAIN (prev);
+-  TREE_CHAIN (prev) = NULL_TREE;
++  cur_stmts = VEC_pop (tree, stmt_list_stack);
+ }
+ 
+ static GTY(()) tree top;
+@@ -212,7 +219,7 @@
+ static GTY(()) tree stack_alloc_function_ptr;
+ extern void ortho_fe_init (void);
+ 
+-static int
++static bool
+ global_bindings_p (void)
+ {
+   return cur_binding_level->prev == NULL;
+@@ -253,36 +260,38 @@
+   push_binding ();
+ 
+   build_common_tree_nodes (0, 0);
+-  size_type_node = type_for_size (GET_MODE_BITSIZE (Pmode), 1);
+-  set_sizetype (size_type_node);
+-  build_common_tree_nodes_2 (0);
++// http://gcc.gnu.org/ml/fortran/2011-06/msg00005.html removes the following
++//  size_type_node = type_for_size (GET_MODE_BITSIZE (Pmode), 1);
++//  set_sizetype (size_type_node);
++//  build_common_tree_nodes_2 (0);
++
++  n = build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("int"), integer_type_node);
+ 
+-  n = build_decl (TYPE_DECL, get_identifier ("int"), integer_type_node);
+   push_decl (n);
+-  n = build_decl (TYPE_DECL, get_identifier ("char"), char_type_node);
++  n = build_decl (BUILTINS_LOCATION, TYPE_DECL, get_identifier ("char"), char_type_node);
+   push_decl (n);
+ 
+   /* Create alloca builtin.  */
+   {
+     tree args_type = tree_cons (NULL_TREE, size_type_node, void_list_node);
+     tree func_type = build_function_type (ptr_type_node, args_type);
+-       
+-    implicit_built_in_decls[BUILT_IN_ALLOCA] = builtin_function
++ 
++    set_builtin_decl(BUILT_IN_ALLOCA, builtin_function
+       ("__builtin_alloca", func_type,
+-       BUILT_IN_ALLOCA, BUILT_IN_NORMAL, NULL, NULL_TREE);
++       BUILT_IN_ALLOCA, BUILT_IN_NORMAL, NULL, NULL_TREE), true);
+     
+     stack_alloc_function_ptr = build1
+       (ADDR_EXPR, 
+        build_pointer_type (func_type),
+-       implicit_built_in_decls[BUILT_IN_ALLOCA]);
++       builtin_decl_implicit (BUILT_IN_ALLOCA));
+   }
+ 
+   {
+     tree ptr_ftype = build_function_type (ptr_type_node, NULL_TREE);
+ 
+-    implicit_built_in_decls[BUILT_IN_STACK_SAVE] = builtin_function
++    set_builtin_decl(BUILT_IN_STACK_SAVE, builtin_function
+       ("__builtin_stack_save", ptr_ftype,
+-       BUILT_IN_STACK_SAVE, BUILT_IN_NORMAL, NULL, NULL_TREE);
++       BUILT_IN_STACK_SAVE, BUILT_IN_NORMAL, NULL, NULL_TREE), true);
+   }
+ 
+   {
+@@ -292,9 +301,9 @@
+       (void_type_node,
+        tree_cons (NULL_TREE, ptr_type_node, NULL_TREE));
+ 
+-    implicit_built_in_decls[BUILT_IN_STACK_RESTORE] = builtin_function
++    set_builtin_decl(BUILT_IN_STACK_RESTORE, builtin_function
+       ("__builtin_stack_restore", ftype_ptr,
+-       BUILT_IN_STACK_RESTORE, BUILT_IN_NORMAL, NULL, NULL_TREE);
++       BUILT_IN_STACK_RESTORE, BUILT_IN_NORMAL, NULL, NULL_TREE), true);
+   }
+ 
+   {
+@@ -319,8 +328,14 @@
+ {
+ }
+ 
++static void
++ortho_init_options (unsigned int decoded_options_count,
++		  		    struct cl_decoded_option *decoded_options)
++{
++}
++
+ static unsigned int
+-ortho_init_options (unsigned int argc, const char **argv)
++ortho_option_lang_mask(void)
+ {
+   return CL_vhdl;
+ }
+@@ -331,14 +346,24 @@
+   if (*pfilename == NULL || strcmp (*pfilename, "-") == 0)
+     *pfilename = "*stdin*";
+ 
++  /*
++   * http://www.mail-archive.com/ghdl-discuss@gna.org/msg01245.html
++   */
++  /* Excess precision other than "fast" requires front-end
++   * support.
++   */
++  flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
++
+   /* Run the back-end.  */
+   return false;
+ }
+ 
+ extern int lang_handle_option (const char *opt, const char *arg);
+ 
+-static int
+-ortho_handle_option (size_t code, const char *arg, int value)
++static bool
++ortho_handle_option (size_t code, const char *arg, int value,
++				     int kind ATTRIBUTE_UNUSED, location_t loc ATTRIBUTE_UNUSED,
++				     const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
+ {
+   const char *opt;
+ 
+@@ -348,7 +373,7 @@
+     {
+     case OPT__elab:
+     case OPT_l:
+-    case OPT_c:
++    case OPT_ec:
+     case OPT__anaelab:
+       /* Only a few options have a real arguments.  */
+       return lang_handle_option (opt, arg);
+@@ -375,7 +400,7 @@
+ extern int lang_parse_file (const char *filename);
+ 
+ static void
+-ortho_parse_file (int debug)
++ortho_parse_file (void)
+ {
+   const char *filename;
+ 
+@@ -391,8 +416,9 @@
+     errorcount++;
+   else
+     {
+-      cgraph_finalize_compilation_unit ();
+-      cgraph_optimize ();
++/*      cgraph_finalize_compilation_unit ();
++        cgraph_optimize ();
++        Apparently gcc does this by itself now. And it doesn't work twice! */
+     }
+   linemap_add (line_table, LC_LEAVE, 0, NULL, 1);
+ }
+@@ -505,11 +531,10 @@
+      In expr.c: expand_expr, for operands of a MULT_EXPR.
+      In fold-const.c: fold.
+      In tree.c: get_narrower and get_unwidened.  */
+-
++
+ /* Subroutines of `convert'.  */
+ 
+ 
+-
+ /* Create an expression whose value is that of EXPR,
+    converted to type TYPE.  The TREE_TYPE of the value
+    is always TYPE.  This function implements all reasonable
+@@ -586,7 +611,7 @@
+ 		  const char *library_name,
+ 		  tree attrs ATTRIBUTE_UNUSED)
+ {
+-  tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
++  tree decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL, get_identifier (name), type);
+   DECL_EXTERNAL (decl) = 1;
+   TREE_PUBLIC (decl) = 1;
+   if (library_name)
+@@ -626,6 +651,9 @@
+ 
+   if (precision <= MAX_BITS_PER_WORD)
+     signed_and_unsigned_types[precision][unsignedp] = t;
++  else 
++    // Handle larger requests by returning a NULL tree and letting the back end default to another approach.
++    t = NULL_TREE;
+ 
+   return t;
+ }
+@@ -642,6 +670,8 @@
+ #define LANG_HOOKS_NAME "vhdl"
+ #undef LANG_HOOKS_IDENTIFIER_SIZE
+ #define LANG_HOOKS_IDENTIFIER_SIZE sizeof (struct tree_identifier)
++#undef  LANG_HOOKS_OPTION_LANG_MASK
++#define LANG_HOOKS_OPTION_LANG_MASK ortho_option_lang_mask
+ #undef LANG_HOOKS_INIT
+ #define LANG_HOOKS_INIT ortho_init
+ #undef LANG_HOOKS_FINISH
+@@ -678,10 +708,12 @@
+ #undef LANG_HOOKS_GETDECLS
+ #define LANG_HOOKS_GETDECLS lhd_return_null_tree_v
+ 
+-const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
++struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
++/* no longer const! */
+ 
+ /* Tree code classes.  */
+ 
++/*
+ #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
+ 
+ const enum tree_code_class tree_code_type[] = {
+@@ -690,9 +722,9 @@
+ };
+ #undef DEFTREECODE
+ 
+-/* Table indexed by tree code giving number of expression
++ Table indexed by tree code giving number of expression
+    operands beyond the fixed part of the node structure.
+-   Not used for types or decls.  */
++   Not used for types or decls. 
+ 
+ #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
+ 
+@@ -708,30 +740,36 @@
+   "@@dummy"
+ };
+ #undef DEFTREECODE
++*/
+ 
+-union lang_tree_node 
+-  GTY((desc ("0"),
+-       chain_next ("(union lang_tree_node *) GENERIC_NEXT (&%h.generic)")))
++// https://mail.gna.org/public/ghdl-discuss/2012-01/msg00034.html
++// http://gcc.gnu.org/ml/gcc-patches/2011-03/msg00565.html
++union GTY((desc ("0"),
++       chain_next ("TREE_CODE (&%h.generic) == INTEGER_TYPE ? (union lang_tree_node *)"
++                   " TYPE_NEXT_VARIANT (&%h.generic) :"
++                   " CODE_CONTAINS_STRUCT (TREE_CODE (&%h.generic), TS_COMMON) ?"
++                   " ((union lang_tree_node *) TREE_CHAIN (&%h.generic)) : NULL"))) 
++       lang_tree_node 
+ {
+   union tree_node GTY ((tag ("0"))) generic;
+ };
+ 
+-struct lang_decl GTY(())
++struct GTY(()) lang_decl 
+ {
+   char dummy;
+ };
+ 
+-struct lang_type GTY (())
++struct GTY (()) lang_type 
+ {
+   char dummy;
+ };
+ 
+-struct language_function GTY (())
++struct GTY (()) language_function 
+ {
+   char dummy;
+ };
+ 
+-struct chain_constr_type
++struct GTY (()) chain_constr_type
+ {
+   tree first;
+   tree last;
+@@ -758,7 +796,7 @@
+   constr->last = el;
+ }
+ 
+-struct list_constr_type
++struct GTY (()) list_constr_type
+ {
+   tree first;
+   tree last;
+@@ -956,15 +994,16 @@
+ new_alloca (tree rtype, tree size)
+ {
+   tree res;
+-  tree args;
++  VEC(tree,gc) *args = NULL;
+ 
+   /* Must save stack except when at function level.  */
+   if (cur_binding_level->prev != NULL
+       && cur_binding_level->prev->prev != NULL)
+     cur_binding_level->save_stack = 1;
+ 
+-  args = tree_cons (NULL_TREE, fold_convert (size_type_node, size), NULL_TREE);
+-  res = build_call_list (ptr_type_node, stack_alloc_function_ptr, args);
++  VEC_safe_push(tree, gc, args, fold_convert (size_type_node, size));
++  res = build_call_vec(ptr_type_node, stack_alloc_function_ptr, args);
++
+   return fold_convert (rtype, res);
+ }
+ 
+@@ -1041,7 +1080,7 @@
+   return res;
+ }
+ 
+-struct o_element_list
++struct GTY (()) o_element_list
+ {
+   tree res;
+   struct chain_constr_type chain;
+@@ -1075,7 +1114,7 @@
+ {
+   tree res;
+ 
+-  res = build_decl (FIELD_DECL, ident, etype);
++  res = build_decl (UNKNOWN_LOCATION, FIELD_DECL, ident, etype);
+   DECL_CONTEXT (res) = list->res;
+   chain_append (&list->chain, res);
+   *el = res;
+@@ -1162,7 +1201,10 @@
+       res = make_node (POINTER_TYPE);
+       TREE_TYPE (res) = NULL_TREE;
+       /* Seems necessary.  */
+-      TYPE_MODE (res) = Pmode;
++      /*
++       * http://www.mail-archive.com/ghdl-discuss@gna.org/msg01245.html
++       */
++      SET_TYPE_MODE (res, Pmode);
+       layout_type (res);
+       return res;
+     }
+@@ -1267,7 +1309,7 @@
+   layout_type (*res);
+ }
+ 
+-struct o_record_aggr_list
++struct GTY (()) o_record_aggr_list
+ {
+   tree atype;
+   struct chain_constr_type chain;
+@@ -1292,8 +1334,7 @@
+   *res = build_constructor_from_list (list->atype, list->chain.first);
+ }
+  
+-
+-struct o_array_aggr_list
++struct GTY (()) o_array_aggr_list
+ {
+   tree atype;
+   struct chain_constr_type chain;
+@@ -1374,7 +1415,6 @@
+ 
+   if (TREE_CODE (TREE_TYPE (rec)) != RECORD_TYPE)
+     abort ();
+-
+   res = build3 (COMPONENT_REF, TREE_TYPE (el), rec, el, NULL_TREE);
+   return res;
+ }
+@@ -1574,15 +1614,10 @@
+   tree decl;
+ 
+   TYPE_NAME (atype) = ident;
+-  decl = build_decl (TYPE_DECL, ident, atype);
++  decl = build_decl (UNKNOWN_LOCATION, TYPE_DECL, ident, atype);
+   TYPE_STUB_DECL (atype) = decl;
+   push_decl (decl);
+-  /*
+-      if Get_TYPE_SIZE (Ttype) /= NULL_TREE then
+-         --  Do not generate debug info for uncompleted types.
+-         Rest_Of_Type_Compilation (Ttype, C_True);
+-      end if;
+-  */
++
+ }
+ 
+ enum o_storage { o_storage_external,
+@@ -1623,7 +1658,7 @@
+ {
+   tree cst;
+ 
+-  cst = build_decl (VAR_DECL, ident, atype);
++  cst = build_decl (UNKNOWN_LOCATION, VAR_DECL, ident, atype);
+   set_storage (cst, storage);
+   TREE_READONLY (cst) = 1;
+   push_decl (cst);
+@@ -1663,7 +1698,7 @@
+ {
+   tree var;
+ 
+-  var = build_decl (VAR_DECL, ident, atype);
++  var = build_decl (UNKNOWN_LOCATION, VAR_DECL, ident, atype);
+   if (current_function_decl != NULL_TREE)
+     {    
+       /*  Local variable. */
+@@ -1682,7 +1717,7 @@
+   *res = var;
+ }
+ 
+-struct o_inter_list
++struct GTY (()) o_inter_list
+ {
+   tree ident;
+   enum o_storage storage;
+@@ -1726,7 +1761,7 @@
+ {
+   tree r;
+ 
+-  r = build_decl (PARM_DECL, ident, atype);
++  r = build_decl (UNKNOWN_LOCATION, PARM_DECL, ident, atype);
+   /* DECL_CONTEXT (Res, Xxx); */
+ 
+   /*  Do type conversion: convert boolean and enums to int  */
+@@ -1746,10 +1781,6 @@
+   *res = r;
+ }
+ 
+-/*  Current function nest level, or the number of parents.  */
+-/* static int function_nest_level; */
+-
+-
+ void
+ finish_subprogram_decl (struct o_inter_list *interfaces, tree *res)
+ {
+@@ -1762,7 +1793,7 @@
+      is known not be have variables arguments.  */
+   ortho_list_append (&interfaces->param_list, void_type_node);
+ 
+-  decl = build_decl (FUNCTION_DECL, interfaces->ident,
++  decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, interfaces->ident,
+ 		     build_function_type (interfaces->rtype,
+ 					  interfaces->param_list.first));
+   DECL_SOURCE_LOCATION (decl) = input_location;
+@@ -1784,7 +1815,7 @@
+ 
+   /*  Declare the result.
+       FIXME: should be moved in start_function_body. */
+-  result = build_decl (RESULT_DECL, NULL_TREE, interfaces->rtype);
++  result = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, interfaces->rtype);
+   DECL_RESULT (decl) = result;
+   DECL_CONTEXT (result) = decl;
+ 
+@@ -1828,7 +1859,6 @@
+   tree bind;
+   tree func;
+   tree parent;
+-
+   bind = pop_binding ();
+   pop_stmts ();
+ 
+@@ -1841,20 +1871,22 @@
+ 
+   /* Store the end of the function.  */
+   cfun->function_end_locus = input_location;
+-  
+-  /* This function is being processed in whole-function mode.  */
+-  /* cfun->x_whole_function_mode_p = 1; */
++ 
++  /* dump before gimplify, we can see before-and-after trees */
++  /*  dump_function (TDI_generic, func); */
+ 
++  /* no longer necessary in gcc4.7, but does no harm */
+   gimplify_function_tree (func);
+ 
+   /* Dump the genericized tree IR.
+-     Enabled by -fdump-tree-gimple.  */
+-  dump_function (TDI_generic, func);
++     Enabled by -fdump-tree-gimple.  
++   Redundant in gcc 4.7 */
++  /* dump_function (TDI_generic, func); */
+ 
+   parent = DECL_CONTEXT (func);
+ 
+   if (parent != NULL)
+-    cgraph_node (func);
++    cgraph_get_create_node (func);
+   else
+     cgraph_finalize_function (func, false);
+ 
+@@ -1887,31 +1919,31 @@
+ }
+ 
+ 
+-struct o_assoc_list
++struct GTY (()) o_assoc_list
+ {
+   tree subprg;
+-  struct list_constr_type list;
++  VEC(tree,gc) *list; 
+ };
+ 
+ void
+ start_association (struct o_assoc_list *assocs, tree subprg)
+ {
+   assocs->subprg = subprg;
+-  list_init (&assocs->list);
++  assocs->list = NULL;
+ }
+ 
+ void
+ new_association (struct o_assoc_list *assocs, tree val)
+ {
+-  ortho_list_append (&assocs->list, val);
++  VEC_safe_push(tree, gc, assocs->list, val);
+ }
+ 
+ tree
+ new_function_call (struct o_assoc_list *assocs)
+ {
+-  return build_call_list (TREE_TYPE (TREE_TYPE (assocs->subprg)),
++  return build_call_vec (TREE_TYPE (TREE_TYPE (assocs->subprg)),
+ 			  build_function_ptr (assocs->subprg),
+-			  assocs->list.first);
++			  assocs->list);
+ }
+ 
+ void
+@@ -1919,9 +1951,9 @@
+ {
+   tree res;
+ 
+-  res = build_call_list (TREE_TYPE (TREE_TYPE (assocs->subprg)),
+-			 build_function_ptr (assocs->subprg),
+-			 assocs->list.first);
++  res = build_call_vec (TREE_TYPE (TREE_TYPE (assocs->subprg)),
++			  build_function_ptr (assocs->subprg),
++			  assocs->list);
+   TREE_SIDE_EFFECTS (res) = 1;
+   append_stmt (res);
+ }
+@@ -1962,7 +1994,7 @@
+ }
+ 
+ 
+-struct o_if_block
++struct GTY (()) o_if_block
+ {
+   tree stmt;
+ };
+@@ -2012,13 +2044,13 @@
+ }
+ 
+ 
+-struct o_loop_block
++struct GTY (()) o_loop_block
+ {
+   tree beg_label;
+   tree end_label;
+ };
+ 
+-struct o_snode
++struct GTY (()) o_snode
+ {
+   tree beg_label;
+   tree end_label;
+@@ -2030,7 +2062,7 @@
+ {
+   tree res;
+ 
+-  res = build_decl (LABEL_DECL, NULL_TREE, void_type_node);
++  res = build_decl (UNKNOWN_LOCATION, LABEL_DECL, NULL_TREE, void_type_node);
+   DECL_CONTEXT (res) = current_function_decl;
+   DECL_ARTIFICIAL (res) = 1;
+   return res;
+@@ -2086,7 +2118,7 @@
+   append_stmt (stmt);
+ }
+ 
+-struct o_case_block
++struct GTY (()) o_case_block
+ {
+   tree end_label;
+   int add_break;
+@@ -2124,9 +2156,11 @@
+ new_expr_choice (struct o_case_block *block, tree expr)
+ {
+   tree stmt;
+-  
+-  stmt = build3 (CASE_LABEL_EXPR, void_type_node,
+-		 expr, NULL_TREE, create_artificial_label ());
++
++// http://gcc.gnu.org/ml/gcc-patches/2011-03/msg00567.html
++// http://gcc.gnu.org/ml/gcc-patches/2011-03/msg00557.html
++// CASE_LABEL_EXPR now has a builder ...
++  stmt = build_case_label (expr, NULL_TREE, create_artificial_label (input_location));
+   append_stmt (stmt);
+ }
+ 
+@@ -2135,8 +2169,7 @@
+ {
+   tree stmt;
+ 
+-  stmt = build3 (CASE_LABEL_EXPR, void_type_node,
+-		 low, high, create_artificial_label ());
++  stmt = build_case_label (low, high, create_artificial_label (input_location));
+   append_stmt (stmt);
+ }
+ 
+@@ -2145,8 +2178,7 @@
+ {
+   tree stmt;
+ 
+-  stmt = build3 (CASE_LABEL_EXPR, void_type_node,
+-		 NULL_TREE, NULL_TREE, create_artificial_label ());
++  stmt = build_case_label (NULL_TREE, NULL_TREE, create_artificial_label (input_location));
+   append_stmt (stmt);
+ }
+ 
+diff -u -r 0.29/ghdl-0.29/vhdl/version.ads gcc-4.7.2/gcc/vhdl/version.ads
+--- 0.29/ghdl-0.29/vhdl/version.ads	2012-09-28 12:12:35.000000000 +0100
++++ gcc-4.7.2/gcc/vhdl/version.ads	2012-10-10 15:20:07.470951993 +0100
+@@ -1,5 +1,5 @@
+ package Version is
+    Ghdl_Release : constant String :=
+-      "GHDL 0.29 (20100109) [Sokcho edition]";
+-   Ghdl_Ver : constant String := "0.29";
++      "GHDL 0.30 (20121010) [Dunoon edition]";
++   Ghdl_Ver : constant String := "0.30";
+ end Version;
