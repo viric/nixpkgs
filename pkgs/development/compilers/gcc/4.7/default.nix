@@ -62,7 +62,7 @@ let version = "4.7.2";
       ++ optional langAda ./gnat-cflags.patch
       ++ optional langFortran ./gfortran-driving.patch
       ++ optional langVhdl ./ghdl_gcc47_patch
-      ++ optional langVhdl ./ghdl-includes.patch
+      ++ optional langVhdl ./ghdl-bootstrap.patch
       ++ optional (stdenv.isGNU || crossGNU) ./hurd-sigrtmin.patch;
 
     javaEcj = fetchurl {

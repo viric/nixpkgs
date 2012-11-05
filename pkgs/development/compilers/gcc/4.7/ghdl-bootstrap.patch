@@ -34,7 +34,7 @@ index e9c9b23..eb2d485 100644
   $(AGCC_GCCOBJ_DIR)gcc/gtype-vhdl.h \
   $(AGCC_GCCOBJ_DIR)gcc/gt-vhdl-ortho-lang.h
 -	$(CC) -c -o $@ $< $(AGCC_CFLAGS)
-+	$(CXX) -c $(INCLUDES) -o $@ $< $(AGCC_CFLAGS)
++	$(COMPILER) -c $(INCLUDES) -o $@ $< $(AGCC_CFLAGS)
  
  agcc-clean: force
  	$(RM) -f $(agcc_objdir)/*.o
