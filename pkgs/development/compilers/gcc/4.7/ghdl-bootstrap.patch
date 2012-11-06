@@ -69,6 +69,20 @@ index e9c9b23..371d586 100644
  	$(MAKE_IN_VHDL) ../ghdl$(exeext)
  
  # Ghdl libraries.
+diff --git a/gcc/vhdl/Makefile.in b/gcc/vhdl/Makefile.in
+index 96e5087..b8d2ed0 100644
+--- a/gcc/vhdl/Makefile.in
++++ b/gcc/vhdl/Makefile.in
+@@ -184,7 +184,8 @@ drvdir/default_pathes.ads: drvdir Makefile
+ 	 -bargs -E -cargs $(ADA_CFLAGS) $(GHDL_ADAFLAGS) -largs $(LIBS) \
+ 	-largs ../../vec.o -largs ../../ggc-none.o -largs ../../diagnostic.o \
+ 	-largs ../../input.o -largs ../../pretty-print.o -largs ../../intl.o \
+-	-largs ../../version.o -largs ../../../libcpp/libcpp.a -largs -liberty
++	-largs ../../version.o -largs ../../../libcpp/libcpp.a \
++	-largs ../../../libiberty/libiberty.a
+ 
+ drvdir:
+ 	mkdir $@
 diff --git a/gcc/vhdl/ortho-lang.c b/gcc/vhdl/ortho-lang.c
 index 7aa21a4..c613e1e 100644
 --- a/gcc/vhdl/ortho-lang.c
