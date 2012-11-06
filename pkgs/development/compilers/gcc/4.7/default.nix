@@ -414,7 +414,7 @@ stdenv.mkDerivation ({
      "parallel make is currently not supported since collisions in profile
      collecting may occur"
   */
-  enableParallelBuilding = false;
+  enableParallelBuilding = !profiledCompiler;
 
   meta = {
     homepage = http://gcc.gnu.org/;
