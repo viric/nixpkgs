@@ -1,5 +1,5 @@
 diff --git a/gcc/vhdl/Make-lang.in b/gcc/vhdl/Make-lang.in
-index e9c9b23..371d586 100644
+index e9c9b23..7e4263b 100644
 --- a/gcc/vhdl/Make-lang.in
 +++ b/gcc/vhdl/Make-lang.in
 @@ -101,26 +101,25 @@ AGCC_CFLAGS=-g -Wall -DIN_GCC $(AGCC_INC_FLAGS)
@@ -41,7 +41,7 @@ index e9c9b23..371d586 100644
 -	$(CC) -c -o $@ $< $(AGCC_CFLAGS)
 +		gtype-vhdl.h \
 +		gt-vhdl-ortho-lang.h \
-+		tm.h
++		$(TM_H)
 +	$(COMPILER) -c $(INCLUDES) -o $@ $< $(AGCC_CFLAGS)
  
  agcc-clean: force
