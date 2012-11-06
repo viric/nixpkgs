@@ -1,5 +1,5 @@
 diff --git a/gcc/vhdl/Make-lang.in b/gcc/vhdl/Make-lang.in
-index e9c9b23..f174bf3 100644
+index e9c9b23..b1f458c 100644
 --- a/gcc/vhdl/Make-lang.in
 +++ b/gcc/vhdl/Make-lang.in
 @@ -101,26 +101,24 @@ AGCC_CFLAGS=-g -Wall -DIN_GCC $(AGCC_INC_FLAGS)
@@ -43,7 +43,7 @@ index e9c9b23..f174bf3 100644
  
  agcc-clean: force
  	$(RM) -f $(agcc_objdir)/*.o
-@@ -141,7 +139,9 @@ ghdl1$(exeext): $(AGCC_OBJS) $(AGCC_DEPS) force
+@@ -141,10 +139,20 @@ ghdl1$(exeext): $(AGCC_OBJS) $(AGCC_DEPS) force
  	 -cargs $(CFLAGS) $(GHDL_ADAFLAGS)
  	$(GNATMAKE) -o $@ -aI$(srcdir)/vhdl -aOvhdl ortho_gcc-main \
  	 -bargs -E -cargs $(CFLAGS) $(GHDL_ADAFLAGS) \
@@ -51,9 +51,21 @@ index e9c9b23..f174bf3 100644
 +	 -largs $(AGCC_OBJS) $(LIBS) $(BACKENDLIBS)
 +
 +
++DRIVER_OBJECTS := vec.o \
++	ggc-none.o \
++	diagnostic.o \
++	input.o \
++	pretty-print.o \
++	intl.o \
++	version.o \
++	$(LIBIBERTY)
  
  # The driver for ghdl.
- ghdl$(exeext): force
+-ghdl$(exeext): force
++ghdl$(exeext): $(DRIVER_OBJECTS) force
+ 	$(MAKE_IN_VHDL) ../ghdl$(exeext)
+ 
+ # Ghdl libraries.
 diff --git a/gcc/vhdl/ortho-lang.c b/gcc/vhdl/ortho-lang.c
 index 7aa21a4..c613e1e 100644
 --- a/gcc/vhdl/ortho-lang.c
