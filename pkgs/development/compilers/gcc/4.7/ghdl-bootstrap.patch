@@ -98,15 +98,6 @@ index 7aa21a4..e677496 100644
  
  static void
  ortho_parse_file (void)
-@@ -541,7 +541,7 @@ ortho_truthvalue_conversion (tree expr)
-    conversions; callers should filter out those that are
-    not permitted by the language being compiled.  */
- 
--tree
-+extern "C" tree
- convert (tree type, tree expr)
- {
-   tree e = expr;
 @@ -607,7 +607,7 @@ static tree
  builtin_function (const char *name,
  		  tree type,
@@ -851,3 +842,81 @@ index 7aa21a4..e677496 100644
  get_identifier_string (tree id, const char **str, int *len)
  {
    *len = IDENTIFIER_LENGTH (id);
+diff --git a/gcc/vhdl/ortho-lang.c b/gcc/vhdl/ortho-lang.c
+index f3ff244..3181078 100644
+--- a/gcc/vhdl/ortho-lang.c
++++ b/gcc/vhdl/ortho-lang.c
+@@ -2198,7 +2198,7 @@ finish_case_stmt (struct o_case_block *block)
+   append_stmt (stmt);
+ }
+ 
+-bool
++extern "C" bool
+ compare_identifier_string (tree id, const char *str, size_t len)
+ {
+   if (IDENTIFIER_LENGTH (id) != len)
+@@ -2216,6 +2216,18 @@ get_identifier_string (tree id, const char **str, int *len)
+   *str = IDENTIFIER_POINTER (id);
+ }
+ 
++extern "C" tree
++get_identifier_with_length_c (const char *c, size_t s)
++{
++  return get_identifier_with_length(c, s);
++}
++
++extern "C" int
++toplev_main_c (int argc, char **argv)
++{
++  return toplev_main(argc, argv);
++}
++
+ #include "debug.h"
+ #include "gt-vhdl-ortho-lang.h"
+ #include "gtype-vhdl.h"
+diff --git a/gcc/vhdl/ortho_gcc-main.adb b/gcc/vhdl/ortho_gcc-main.adb
+index 96b89e6..1c18f0b 100644
+--- a/gcc/vhdl/ortho_gcc-main.adb
++++ b/gcc/vhdl/ortho_gcc-main.adb
+@@ -10,15 +10,15 @@ is
+    pragma Import (C, gnat_argc);
+    pragma Import (C, gnat_argv);
+ 
+-   function Toplev_Main (Argc : Integer; Argv : System.Address)
++   function Toplev_Main_C (Argc : Integer; Argv : System.Address)
+                         return Integer;
+-   pragma Import (C, Toplev_Main);
++   pragma Import (C, Toplev_Main_C);
+ 
+    Status : Exit_Status;
+ begin
+    Ortho_Gcc_Front.Init;
+ 
+    --  Note: GCC set signal handlers...
+-   Status := Exit_Status (Toplev_Main (gnat_argc, gnat_argv));
++   Status := Exit_Status (Toplev_Main_C (gnat_argc, gnat_argv));
+    Set_Exit_Status (Status);
+ end Ortho_Gcc.Main;
+diff --git a/gcc/vhdl/ortho_ident.adb b/gcc/vhdl/ortho_ident.adb
+index 1fac9ab..a2cca5c 100644
+--- a/gcc/vhdl/ortho_ident.adb
++++ b/gcc/vhdl/ortho_ident.adb
+@@ -1,7 +1,7 @@
+ package body Ortho_Ident is
+-   function Get_Identifier_With_Length (Str : Address; Size : Integer)
++   function Get_Identifier_With_Length_C (Str : Address; Size : Integer)
+                                        return O_Ident;
+-   pragma Import (C, Get_Identifier_With_Length);
++   pragma Import (C, Get_Identifier_With_Length_C);
+ 
+    function Compare_Identifier_String
+      (Id : O_Ident; Str : Address; Size : Integer)
+@@ -11,7 +11,7 @@ package body Ortho_Ident is
+ 
+    function Get_Identifier (Str : String) return O_Ident is
+    begin
+-      return Get_Identifier_With_Length (Str'Address, Str'Length);
++      return Get_Identifier_With_Length_C (Str'Address, Str'Length);
+    end Get_Identifier;
+ 
+    function Is_Equal (Id : O_Ident; Str : String) return Boolean is
