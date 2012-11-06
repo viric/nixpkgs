@@ -1,33 +1,38 @@
-Trying to make ghdl build with the C++ bootstrap present in 4.7.2.
-
 diff --git a/gcc/vhdl/Make-lang.in b/gcc/vhdl/Make-lang.in
-index e9c9b23..eb2d485 100644
+index e9c9b23..f174bf3 100644
 --- a/gcc/vhdl/Make-lang.in
 +++ b/gcc/vhdl/Make-lang.in
-@@ -101,11 +101,9 @@ AGCC_CFLAGS=-g -Wall -DIN_GCC $(AGCC_INC_FLAGS)
+@@ -101,26 +101,24 @@ AGCC_CFLAGS=-g -Wall -DIN_GCC $(AGCC_INC_FLAGS)
  AGCC_LOCAL_OBJS=ortho-lang.o
  
  AGCC_DEPS := $(AGCC_LOCAL_OBJS)
 -AGCC_OBJS := $(AGCC_LOCAL_OBJS) \
 -	$(AGCC_GCCOBJ_DIR)gcc/toplev.o \
-+AGCC_OBJS := $(AGCC_GCCOBJ_DIR)gcc/toplev.o \
- 	$(AGCC_GCCOBJ_DIR)gcc/vec.o \
- 	$(AGCC_GCCOBJ_DIR)gcc/hooks.o \
+-	$(AGCC_GCCOBJ_DIR)gcc/vec.o \
+-	$(AGCC_GCCOBJ_DIR)gcc/hooks.o \
 -	$(AGCC_GCCOBJ_DIR)gcc/dwarf2out.o \
- 	$(AGCC_GCCOBJ_DIR)gcc/params.o \
- 	$(AGCC_GCCOBJ_DIR)gcc/opts-common.o \
- 	$(AGCC_GCCOBJ_DIR)gcc/opts.o \
-@@ -114,13 +112,18 @@ AGCC_OBJS := $(AGCC_LOCAL_OBJS) \
- 	$(AGCC_GCCOBJ_DIR)gcc/options.o \
- 	$(AGCC_GCCOBJ_DIR)gcc/attribs.o \
- 	$(AGCC_GCCOBJ_DIR)gcc/libbackend.a \
-+	$(AGCC_GCCOBJ_DIR)gcc/libcommon-target.a \
-+	$(AGCC_GCCOBJ_DIR)gcc/libcommon.a \
- 	$(AGCC_GCCOBJ_DIR)libcpp/libcpp.a \
+-	$(AGCC_GCCOBJ_DIR)gcc/params.o \
+-	$(AGCC_GCCOBJ_DIR)gcc/opts-common.o \
+-	$(AGCC_GCCOBJ_DIR)gcc/opts.o \
+-	$(AGCC_GCCOBJ_DIR)gcc/i386-common.o \
+-	$(AGCC_GCCOBJ_DIR)gcc/common/common-targhooks.o \
+-	$(AGCC_GCCOBJ_DIR)gcc/options.o \
+-	$(AGCC_GCCOBJ_DIR)gcc/attribs.o \
+-	$(AGCC_GCCOBJ_DIR)gcc/libbackend.a \
+-	$(AGCC_GCCOBJ_DIR)libcpp/libcpp.a \
 -	$(AGCC_GCCOBJ_DIR)libiberty/libiberty.a
-+	$(AGCC_GCCOBJ_DIR)libiberty/libiberty.a \
-+	$(CPPLIB) \
-+	$(LIBDECNUMBER) \
++AGCC_OBJS := toplev.o \
++	vec.o \
++	hooks.o \
++	params.o \
++	opts-common.o \
++	opts.o \
++	i386-common.o \
++	common/common-targhooks.o \
++	options.o \
++	attribs.o \
++	libbackend.a \
++	$(LIBDEPS) \
 +	$(AGCC_LOCAL_OBJS)
  
  ortho-lang.o: $(agcc_srcdir)/ortho-lang.c \
@@ -38,7 +43,7 @@ index e9c9b23..eb2d485 100644
  
  agcc-clean: force
  	$(RM) -f $(agcc_objdir)/*.o
-@@ -141,7 +144,9 @@ ghdl1$(exeext): $(AGCC_OBJS) $(AGCC_DEPS) force
+@@ -141,7 +139,9 @@ ghdl1$(exeext): $(AGCC_OBJS) $(AGCC_DEPS) force
  	 -cargs $(CFLAGS) $(GHDL_ADAFLAGS)
  	$(GNATMAKE) -o $@ -aI$(srcdir)/vhdl -aOvhdl ortho_gcc-main \
  	 -bargs -E -cargs $(CFLAGS) $(GHDL_ADAFLAGS) \
@@ -50,19 +55,32 @@ index e9c9b23..eb2d485 100644
  # The driver for ghdl.
  ghdl$(exeext): force
 diff --git a/gcc/vhdl/ortho-lang.c b/gcc/vhdl/ortho-lang.c
-index 7aa21a4..e677496 100644
+index 7aa21a4..c613e1e 100644
 --- a/gcc/vhdl/ortho-lang.c
 +++ b/gcc/vhdl/ortho-lang.c
-@@ -217,7 +217,7 @@ pop_stmts (void)
+@@ -24,6 +24,12 @@
+ #include "tree-dump.h"
+ #include "tree-iterator.h"
+ 
++#ifdef __cplusplus
++#define EXTERN_C extern "C"
++#else
++#define EXTERN_C extern
++#endif
++
+ static tree type_for_size (unsigned int precision, int unsignedp);
+ 
+ const int tree_identifier_size = sizeof (struct tree_identifier);
+@@ -217,7 +223,7 @@ pop_stmts (void)
  static GTY(()) tree top;
  
  static GTY(()) tree stack_alloc_function_ptr;
 -extern void ortho_fe_init (void);
-+extern "C" void ortho_fe_init (void);
++EXTERN_C void ortho_fe_init (void);
  
  static bool
  global_bindings_p (void)
-@@ -241,7 +241,7 @@ static tree
+@@ -241,7 +247,7 @@ static tree
  builtin_function (const char *name,
  		  tree type,
  		  int function_code,
@@ -71,16 +89,16 @@ index 7aa21a4..e677496 100644
  		  const char *library_name,
  		  tree attrs ATTRIBUTE_UNUSED);
  
-@@ -358,7 +358,7 @@ ortho_post_options (const char **pfilename)
+@@ -358,7 +364,7 @@ ortho_post_options (const char **pfilename)
    return false;
  }
  
 -extern int lang_handle_option (const char *opt, const char *arg);
-+extern "C" int lang_handle_option (const char *opt, const char *arg);
++EXTERN_C int lang_handle_option (const char *opt, const char *arg);
  
  static bool
  ortho_handle_option (size_t code, const char *arg, int value,
-@@ -387,7 +387,7 @@ ortho_handle_option (size_t code, const char *arg, int value,
+@@ -387,7 +393,7 @@ ortho_handle_option (size_t code, const char *arg, int value,
  	  
  	  len1 = strlen (opt);
  	  len2 = strlen (arg);
@@ -89,16 +107,16 @@ index 7aa21a4..e677496 100644
  	  memcpy (nopt, opt, len1);
  	  memcpy (nopt + len1, arg, len2);
  	  nopt[len1 + len2] = 0;
-@@ -397,7 +397,7 @@ ortho_handle_option (size_t code, const char *arg, int value,
+@@ -397,7 +403,7 @@ ortho_handle_option (size_t code, const char *arg, int value,
      }
  }
  
 -extern int lang_parse_file (const char *filename);
-+extern "C" int lang_parse_file (const char *filename);
++EXTERN_C int lang_parse_file (const char *filename);
  
  static void
  ortho_parse_file (void)
-@@ -607,7 +607,7 @@ static tree
+@@ -607,7 +613,7 @@ static tree
  builtin_function (const char *name,
  		  tree type,
  		  int function_code,
@@ -107,7 +125,7 @@ index 7aa21a4..e677496 100644
  		  const char *library_name,
  		  tree attrs ATTRIBUTE_UNUSED)
  {
-@@ -617,8 +617,8 @@ builtin_function (const char *name,
+@@ -617,8 +623,8 @@ builtin_function (const char *name,
    if (library_name)
      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
    make_decl_rtl (decl);
@@ -118,98 +136,98 @@ index 7aa21a4..e677496 100644
    DECL_SOURCE_LOCATION (decl) = input_location;
    return decl;
  }
-@@ -886,7 +886,7 @@ static enum tree_code ON_op_to_TREE_CODE[ON_LAST] = {
+@@ -886,7 +892,7 @@ static enum tree_code ON_op_to_TREE_CODE[ON_LAST] = {
    GT_EXPR,
  };
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_dyadic_op (enum ON_op_kind kind, tree left, tree right)
  {
    tree left_type;
-@@ -911,13 +911,13 @@ new_dyadic_op (enum ON_op_kind kind, tree left, tree right)
+@@ -911,13 +917,13 @@ new_dyadic_op (enum ON_op_kind kind, tree left, tree right)
    return build2 (code, left_type, left, right);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_monadic_op (enum ON_op_kind kind, tree operand)
  {
    return build1 (ON_op_to_TREE_CODE[kind], TREE_TYPE (operand), operand);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_compare_op (enum ON_op_kind kind, tree left, tree right, tree ntype)
  {
    if (TREE_CODE (ntype) != BOOLEAN_TYPE)
-@@ -927,7 +927,7 @@ new_compare_op (enum ON_op_kind kind, tree left, tree right, tree ntype)
+@@ -927,7 +933,7 @@ new_compare_op (enum ON_op_kind kind, tree left, tree right, tree ntype)
    return build2 (ON_op_to_TREE_CODE[kind], ntype, left, right);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_convert_ov (tree val, tree rtype)
  {
    tree val_type;
-@@ -990,7 +990,7 @@ new_convert_ov (tree val, tree rtype)
+@@ -990,7 +996,7 @@ new_convert_ov (tree val, tree rtype)
    return build1 (code, rtype, val);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_alloca (tree rtype, tree size)
  {
    tree res;
-@@ -1007,7 +1007,7 @@ new_alloca (tree rtype, tree size)
+@@ -1007,7 +1013,7 @@ new_alloca (tree rtype, tree size)
    return fold_convert (rtype, res);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_signed_literal (tree ltype, long long value)
  {
    tree res;
-@@ -1024,7 +1024,7 @@ new_signed_literal (tree ltype, long long value)
+@@ -1024,7 +1030,7 @@ new_signed_literal (tree ltype, long long value)
    return res;
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_unsigned_literal (tree ltype, unsigned long long value)
  {
    tree res;
-@@ -1041,7 +1041,7 @@ new_unsigned_literal (tree ltype, unsigned long long value)
+@@ -1041,7 +1047,7 @@ new_unsigned_literal (tree ltype, unsigned long long value)
    return res;
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_null_access (tree ltype)
  {
    tree res;
-@@ -1050,7 +1050,7 @@ new_null_access (tree ltype)
+@@ -1050,7 +1056,7 @@ new_null_access (tree ltype)
    return res;
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_float_literal (tree ltype, double value)
  {
    signed long long s;
-@@ -1086,20 +1086,20 @@ struct GTY (()) o_element_list
+@@ -1086,20 +1092,20 @@ struct GTY (()) o_element_list
    struct chain_constr_type chain;
  };
  
 -void
-+extern "C" void
++EXTERN_C void
  new_uncomplete_record_type (tree *res)
  {
    *res = make_node (RECORD_TYPE);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  start_record_type (struct o_element_list *elements)
  {
    elements->res = make_node (RECORD_TYPE);
@@ -217,34 +235,34 @@ index 7aa21a4..e677496 100644
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  start_uncomplete_record_type (tree res, struct o_element_list *elements)
  {
    elements->res = res;
-@@ -1120,7 +1120,7 @@ new_record_union_field (struct o_element_list *list,
+@@ -1120,7 +1126,7 @@ new_record_union_field (struct o_element_list *list,
    *el = res;
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_record_field (struct o_element_list *list,
  		  tree *el,
  		  tree ident,
-@@ -1129,7 +1129,7 @@ new_record_field (struct o_element_list *list,
+@@ -1129,7 +1135,7 @@ new_record_field (struct o_element_list *list,
    return new_record_union_field (list, el, ident, etype);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_record_type (struct o_element_list *elements, tree *res)
  {
    TYPE_FIELDS (elements->res) = elements->chain.first;
-@@ -1144,14 +1144,14 @@ finish_record_type (struct o_element_list *elements, tree *res)
+@@ -1144,14 +1150,14 @@ finish_record_type (struct o_element_list *elements, tree *res)
  }
  
  
 -void
-+extern "C" void
++EXTERN_C void
  start_union_type (struct o_element_list *elements)
  {
    elements->res =  make_node (UNION_TYPE);
@@ -252,66 +270,66 @@ index 7aa21a4..e677496 100644
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_union_field (struct o_element_list *elements,
  		 tree *el,
  		 tree ident,
-@@ -1160,7 +1160,7 @@ new_union_field (struct o_element_list *elements,
+@@ -1160,7 +1166,7 @@ new_union_field (struct o_element_list *elements,
    return new_record_union_field (elements, el, ident, etype);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_union_type (struct o_element_list *elements, tree *res)
  {
    TYPE_FIELDS (elements->res) = elements->chain.first;
-@@ -1168,19 +1168,19 @@ finish_union_type (struct o_element_list *elements, tree *res)
+@@ -1168,19 +1174,19 @@ finish_union_type (struct o_element_list *elements, tree *res)
    *res = elements->res;
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_unsigned_type (int size)
  {
    return make_unsigned_type (size);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_signed_type (int size)
  {
    return make_signed_type (size);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_float_type (void)
  {
    tree res;
-@@ -1191,7 +1191,7 @@ new_float_type (void)
+@@ -1191,7 +1197,7 @@ new_float_type (void)
    return res;
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_access_type (tree dtype)
  {
    tree res;
-@@ -1212,7 +1212,7 @@ new_access_type (tree dtype)
+@@ -1212,7 +1218,7 @@ new_access_type (tree dtype)
      return build_pointer_type (dtype);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_access_type (tree atype, tree dtype)
  {
    if (TREE_CODE (atype) != POINTER_TYPE
-@@ -1222,14 +1222,14 @@ finish_access_type (tree atype, tree dtype)
+@@ -1222,14 +1228,14 @@ finish_access_type (tree atype, tree dtype)
    TREE_TYPE (atype) = dtype;
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_array_type (tree el_type, tree index_type)
  {
    return build_array_type (el_type, index_type);
@@ -319,52 +337,52 @@ index 7aa21a4..e677496 100644
  
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_constrained_array_type (tree atype, tree length)
  {
    tree range_type;
-@@ -1260,7 +1260,7 @@ new_constrained_array_type (tree atype, tree length)
+@@ -1260,7 +1266,7 @@ new_constrained_array_type (tree atype, tree length)
    return res;
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_boolean_type (tree *res,
  		  tree false_id, tree *false_e,
  		  tree true_id, tree *true_e)
-@@ -1280,7 +1280,7 @@ struct o_enum_list
+@@ -1280,7 +1286,7 @@ struct o_enum_list
    int size;
  };
  
 -void
-+extern "C" void
++EXTERN_C void
  start_enum_type (struct o_enum_list *list, int size)
  {
    list->res = make_node (ENUMERAL_TYPE);
-@@ -1289,7 +1289,7 @@ start_enum_type (struct o_enum_list *list, int size)
+@@ -1289,7 +1295,7 @@ start_enum_type (struct o_enum_list *list, int size)
    list->size = size;
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_enum_literal (struct o_enum_list *list, tree ident, tree *res)
  {
    *res = build_int_cstu (list->res, list->num);
-@@ -1297,7 +1297,7 @@ new_enum_literal (struct o_enum_list *list, tree ident, tree *res)
+@@ -1297,7 +1303,7 @@ new_enum_literal (struct o_enum_list *list, tree ident, tree *res)
    list->num++;
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_enum_type (struct o_enum_list *list, tree *res)
  {
    *res = list->res;
-@@ -1315,20 +1315,20 @@ struct GTY (()) o_record_aggr_list
+@@ -1315,20 +1321,20 @@ struct GTY (()) o_record_aggr_list
    struct chain_constr_type chain;
  };
  
 -void
-+extern "C" void
++EXTERN_C void
  start_record_aggr (struct o_record_aggr_list *list, tree atype)
  {
    list->atype = atype;
@@ -372,23 +390,23 @@ index 7aa21a4..e677496 100644
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_record_aggr_el (struct o_record_aggr_list *list, tree value)
  {
    chain_append (&list->chain, build_tree_list (NULL_TREE, value));
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_record_aggr (struct o_record_aggr_list *list, tree *res)
  {
    *res = build_constructor_from_list (list->atype, list->chain.first);
-@@ -1340,27 +1340,27 @@ struct GTY (()) o_array_aggr_list
+@@ -1340,27 +1346,27 @@ struct GTY (()) o_array_aggr_list
    struct chain_constr_type chain;
  };
  
 -void
-+extern "C" void
++EXTERN_C void
  start_array_aggr (struct o_array_aggr_list *list, tree atype)
  {
    list->atype = atype;
@@ -396,14 +414,14 @@ index 7aa21a4..e677496 100644
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_array_aggr_el (struct o_array_aggr_list *list, tree value)
  {
    chain_append (&list->chain, build_tree_list (NULL_TREE, value));
  }
   
 -void
-+extern "C" void
++EXTERN_C void
  finish_array_aggr (struct o_array_aggr_list *list, tree *res)
  {
    *res = build_constructor_from_list (list->atype, list->chain.first);
@@ -411,224 +429,224 @@ index 7aa21a4..e677496 100644
  
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_union_aggr (tree atype, tree field, tree value)
  {
    tree res;
-@@ -1370,7 +1370,7 @@ new_union_aggr (tree atype, tree field, tree value)
+@@ -1370,7 +1376,7 @@ new_union_aggr (tree atype, tree field, tree value)
    return res;
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_indexed_element (tree arr, tree index)
  {
    ortho_mark_addressable (arr);
-@@ -1378,7 +1378,7 @@ new_indexed_element (tree arr, tree index)
+@@ -1378,7 +1384,7 @@ new_indexed_element (tree arr, tree index)
  		 arr, index, NULL_TREE, NULL_TREE);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_slice (tree arr, tree res_type, tree index)
  {
  #if 0
-@@ -1408,7 +1408,7 @@ new_slice (tree arr, tree res_type, tree index)
+@@ -1408,7 +1414,7 @@ new_slice (tree arr, tree res_type, tree index)
  #endif
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_selected_element (tree rec, tree el)
  {
    tree res;
-@@ -1419,7 +1419,7 @@ new_selected_element (tree rec, tree el)
+@@ -1419,7 +1425,7 @@ new_selected_element (tree rec, tree el)
    return res;
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_access_element (tree acc)
  {
    tree acc_type;
-@@ -1431,7 +1431,7 @@ new_access_element (tree acc)
+@@ -1431,7 +1437,7 @@ new_access_element (tree acc)
    return build1 (INDIRECT_REF, TREE_TYPE (acc_type), acc);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_offsetof (tree field, tree rtype)
  {
    tree off;
-@@ -1459,7 +1459,7 @@ new_offsetof (tree field, tree rtype)
+@@ -1459,7 +1465,7 @@ new_offsetof (tree field, tree rtype)
    return res;
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_sizeof (tree atype, tree rtype)
  {
   tree size;
-@@ -1558,25 +1558,25 @@ array_to_pointer_conversion (tree exp)
+@@ -1558,25 +1564,25 @@ array_to_pointer_conversion (tree exp)
      }
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_unchecked_address (tree lvalue, tree atype)
  {
    return ortho_build_addr (lvalue, atype);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_address (tree lvalue, tree atype)
  {
    return ortho_build_addr (lvalue, atype);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_global_address (tree lvalue, tree atype)
  {
    return ortho_build_addr (lvalue, atype);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_global_unchecked_address (tree lvalue, tree atype)
  {
    return ortho_build_addr (lvalue, atype);
-@@ -1590,25 +1590,25 @@ build_function_ptr (tree func)
+@@ -1590,25 +1596,25 @@ build_function_ptr (tree func)
  		 build_pointer_type (TREE_TYPE (func)), func);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_subprogram_address (tree subprg, tree atype)
  {
    return fold (build1 (NOP_EXPR, atype, build_function_ptr (subprg)));
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_value (tree lvalue)
  {
    return lvalue;
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_debug_line_decl (int line)
  {
    input_location = linemap_line_start (line_table, line, 252);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_type_decl (tree ident, tree atype)
  {
    tree decl;
-@@ -1653,7 +1653,7 @@ set_storage (tree Node, enum o_storage storage)
+@@ -1653,7 +1659,7 @@ set_storage (tree Node, enum o_storage storage)
      }
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_const_decl (tree *res, tree ident, enum o_storage storage, tree atype)
  {
    tree cst;
-@@ -1678,12 +1678,12 @@ new_const_decl (tree *res, tree ident, enum o_storage storage, tree atype)
+@@ -1678,12 +1684,12 @@ new_const_decl (tree *res, tree ident, enum o_storage storage, tree atype)
    *res = cst;
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  start_const_value (tree *cst)
  {
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_const_value (tree *cst, tree val)
  {
    DECL_INITIAL (*cst) = val;
-@@ -1693,7 +1693,7 @@ finish_const_value (tree *cst, tree val)
+@@ -1693,7 +1699,7 @@ finish_const_value (tree *cst, tree val)
          (*cst, current_function_decl == NULL_TREE, 0);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_var_decl (tree *res, tree ident, enum o_storage storage, tree atype)
  {
    tree var;
-@@ -1732,7 +1732,7 @@ struct GTY (()) o_inter_list
+@@ -1732,7 +1738,7 @@ struct GTY (()) o_inter_list
    struct chain_constr_type param_chain;
  };
  
 -void
-+extern "C" void
++EXTERN_C void
  start_function_decl (struct o_inter_list *interfaces,
  		     tree ident,
  		     enum o_storage storage,
-@@ -1745,7 +1745,7 @@ start_function_decl (struct o_inter_list *interfaces,
+@@ -1745,7 +1751,7 @@ start_function_decl (struct o_inter_list *interfaces,
    list_init (&interfaces->param_list);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  start_procedure_decl (struct o_inter_list *interfaces,
  		      tree ident,
  		      enum o_storage storage)
-@@ -1753,7 +1753,7 @@ start_procedure_decl (struct o_inter_list *interfaces,
+@@ -1753,7 +1759,7 @@ start_procedure_decl (struct o_inter_list *interfaces,
    start_function_decl (interfaces, ident, storage, void_type_node);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_interface_decl (struct o_inter_list *interfaces,
  		    tree *res,
  		    tree ident,
-@@ -1781,7 +1781,7 @@ new_interface_decl (struct o_inter_list *interfaces,
+@@ -1781,7 +1787,7 @@ new_interface_decl (struct o_inter_list *interfaces,
    *res = r;
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_subprogram_decl (struct o_inter_list *interfaces, tree *res)
  {
    tree decl;
-@@ -1839,7 +1839,7 @@ finish_subprogram_decl (struct o_inter_list *interfaces, tree *res)
+@@ -1839,7 +1845,7 @@ finish_subprogram_decl (struct o_inter_list *interfaces, tree *res)
    *res = decl;
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  start_subprogram_body (tree func)
  {
    if (current_function_decl != DECL_CONTEXT (func))
-@@ -1853,7 +1853,7 @@ start_subprogram_body (tree func)
+@@ -1853,7 +1859,7 @@ start_subprogram_body (tree func)
    push_binding ();
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_subprogram_body (void)
  {
    tree bind;
-@@ -1895,20 +1895,20 @@ finish_subprogram_body (void)
+@@ -1895,20 +1901,20 @@ finish_subprogram_body (void)
  }
  
  
 -void
-+extern "C" void
++EXTERN_C void
  new_debug_line_stmt (int line)
  {
    input_location = linemap_line_start (line_table, line, 252);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  start_declare_stmt (void)
  {
    push_stmts (alloc_stmt_list ());
@@ -636,16 +654,16 @@ index 7aa21a4..e677496 100644
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_declare_stmt (void)
  {
    tree bind;
-@@ -1925,20 +1925,20 @@ struct GTY (()) o_assoc_list
+@@ -1925,20 +1931,20 @@ struct GTY (()) o_assoc_list
    VEC(tree,gc) *list; 
  };
  
 -void
-+extern "C" void
++EXTERN_C void
  start_association (struct o_assoc_list *assocs, tree subprg)
  {
    assocs->subprg = subprg;
@@ -653,219 +671,214 @@ index 7aa21a4..e677496 100644
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_association (struct o_assoc_list *assocs, tree val)
  {
    VEC_safe_push(tree, gc, assocs->list, val);
  }
  
 -tree
-+extern "C" tree
++EXTERN_C tree
  new_function_call (struct o_assoc_list *assocs)
  {
    return build_call_vec (TREE_TYPE (TREE_TYPE (assocs->subprg)),
-@@ -1946,7 +1946,7 @@ new_function_call (struct o_assoc_list *assocs)
+@@ -1946,7 +1952,7 @@ new_function_call (struct o_assoc_list *assocs)
  			  assocs->list);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_procedure_call (struct o_assoc_list *assocs)
  {
    tree res;
-@@ -1958,7 +1958,7 @@ new_procedure_call (struct o_assoc_list *assocs)
+@@ -1958,7 +1964,7 @@ new_procedure_call (struct o_assoc_list *assocs)
    append_stmt (res);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_assign_stmt (tree target, tree value)
  {
    tree n;
-@@ -1968,7 +1968,7 @@ new_assign_stmt (tree target, tree value)
+@@ -1968,7 +1974,7 @@ new_assign_stmt (tree target, tree value)
    append_stmt (n);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_func_return_stmt (tree value)
  {
    tree assign;
-@@ -1983,7 +1983,7 @@ new_func_return_stmt (tree value)
+@@ -1983,7 +1989,7 @@ new_func_return_stmt (tree value)
    append_stmt (stmt);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_proc_return_stmt (void)
  {
    tree stmt;
-@@ -1999,7 +1999,7 @@ struct GTY (()) o_if_block
+@@ -1999,7 +2005,7 @@ struct GTY (()) o_if_block
    tree stmt;
  };
  
 -void
-+extern "C" void
++EXTERN_C void
  start_if_stmt (struct o_if_block *block, tree cond)
  {
    tree stmt;
-@@ -2012,7 +2012,7 @@ start_if_stmt (struct o_if_block *block, tree cond)
+@@ -2012,7 +2018,7 @@ start_if_stmt (struct o_if_block *block, tree cond)
    push_stmts (stmts);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_elsif_stmt (struct o_if_block *block, tree cond)
  {
    tree stmts;
-@@ -2026,7 +2026,7 @@ new_elsif_stmt (struct o_if_block *block, tree cond)
+@@ -2026,7 +2032,7 @@ new_elsif_stmt (struct o_if_block *block, tree cond)
    push_stmts (stmts);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_else_stmt (struct o_if_block *block)
  {
    tree stmts;
-@@ -2037,7 +2037,7 @@ new_else_stmt (struct o_if_block *block)
+@@ -2037,7 +2043,7 @@ new_else_stmt (struct o_if_block *block)
    push_stmts (stmts);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_if_stmt (struct o_if_block *block)
  {
    pop_stmts ();
-@@ -2068,7 +2068,7 @@ build_label (void)
+@@ -2068,7 +2074,7 @@ build_label (void)
    return res;
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  start_loop_stmt (struct o_snode *label)
  {
    tree stmt;
-@@ -2081,7 +2081,7 @@ start_loop_stmt (struct o_snode *label)
+@@ -2081,7 +2087,7 @@ start_loop_stmt (struct o_snode *label)
    label->end_label = build_label ();
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_loop_stmt (struct o_snode *label)
  {
    tree stmt;
-@@ -2098,7 +2098,7 @@ finish_loop_stmt (struct o_snode *label)
+@@ -2098,7 +2104,7 @@ finish_loop_stmt (struct o_snode *label)
      }
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_exit_stmt (struct o_snode *l)
  {
    tree stmt;
-@@ -2108,7 +2108,7 @@ new_exit_stmt (struct o_snode *l)
+@@ -2108,7 +2114,7 @@ new_exit_stmt (struct o_snode *l)
    TREE_USED (l->end_label) = 1;
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_next_stmt (struct o_snode *l)
  {
    tree stmt;
-@@ -2124,7 +2124,7 @@ struct GTY (()) o_case_block
+@@ -2124,7 +2130,7 @@ struct GTY (()) o_case_block
    int add_break;
  };
  
 -void
-+extern "C" void
++EXTERN_C void
  start_case_stmt (struct o_case_block *block, tree value)
  {
    tree stmt;
-@@ -2138,7 +2138,7 @@ start_case_stmt (struct o_case_block *block, tree value)
+@@ -2138,7 +2144,7 @@ start_case_stmt (struct o_case_block *block, tree value)
    push_stmts (stmts);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  start_choice (struct o_case_block *block)
  {
    tree stmt;
-@@ -2152,7 +2152,7 @@ start_choice (struct o_case_block *block)
+@@ -2152,7 +2158,7 @@ start_choice (struct o_case_block *block)
      }
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_expr_choice (struct o_case_block *block, tree expr)
  {
    tree stmt;
-@@ -2164,7 +2164,7 @@ new_expr_choice (struct o_case_block *block, tree expr)
+@@ -2164,7 +2170,7 @@ new_expr_choice (struct o_case_block *block, tree expr)
    append_stmt (stmt);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_range_choice (struct o_case_block *block, tree low, tree high)
  {
    tree stmt;
-@@ -2173,7 +2173,7 @@ new_range_choice (struct o_case_block *block, tree low, tree high)
+@@ -2173,7 +2179,7 @@ new_range_choice (struct o_case_block *block, tree low, tree high)
    append_stmt (stmt);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  new_default_choice (struct o_case_block *block)
  {
    tree stmt;
-@@ -2182,13 +2182,13 @@ new_default_choice (struct o_case_block *block)
+@@ -2182,13 +2188,13 @@ new_default_choice (struct o_case_block *block)
    append_stmt (stmt);
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_choice (struct o_case_block *block)
  {
    block->add_break = 1;
  }
  
 -void
-+extern "C" void
++EXTERN_C void
  finish_case_stmt (struct o_case_block *block)
  {
    tree stmt;
-@@ -2209,7 +2209,7 @@ compare_identifier_string (tree id, const char *str, size_t len)
-     return false;
- }
- 
--void
-+extern "C" void
- get_identifier_string (tree id, const char **str, int *len)
- {
-   *len = IDENTIFIER_LENGTH (id);
-diff --git a/gcc/vhdl/ortho-lang.c b/gcc/vhdl/ortho-lang.c
-index f3ff244..3181078 100644
---- a/gcc/vhdl/ortho-lang.c
-+++ b/gcc/vhdl/ortho-lang.c
-@@ -2198,7 +2198,7 @@ finish_case_stmt (struct o_case_block *block)
+@@ -2198,7 +2204,7 @@ finish_case_stmt (struct o_case_block *block)
    append_stmt (stmt);
  }
  
 -bool
-+extern "C" bool
++EXTERN_C bool
  compare_identifier_string (tree id, const char *str, size_t len)
  {
    if (IDENTIFIER_LENGTH (id) != len)
-@@ -2216,6 +2216,18 @@ get_identifier_string (tree id, const char **str, int *len)
+@@ -2209,13 +2215,25 @@ compare_identifier_string (tree id, const char *str, size_t len)
+     return false;
+ }
+ 
+-void
++EXTERN_C void
+ get_identifier_string (tree id, const char **str, int *len)
+ {
+   *len = IDENTIFIER_LENGTH (id);
    *str = IDENTIFIER_POINTER (id);
  }
  
-+extern "C" tree
++EXTERN_C tree
 +get_identifier_with_length_c (const char *c, size_t s)
 +{
 +  return get_identifier_with_length(c, s);
 +}
 +
-+extern "C" int
++EXTERN_C int
 +toplev_main_c (int argc, char **argv)
 +{
 +  return toplev_main(argc, argv);
