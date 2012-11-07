@@ -67,12 +67,12 @@ fi
 
 
 # Add the flags for the GNAT compiler proper.
-extraAfter=()
-extraBefore=($NIX_GNATFLAGS_COMPILE)
+extraAfter=($NIX_GNATFLAGS_COMPILE)
+extraBefore=()
 
 if [ "`basename $0`x" = "gnatmakex" ]; then
-  extraBefore=("--GNATBIND=@out@/bin/gnatbind" "--GNATLINK=@out@/bin/gnatlink"
-		${extraBefore[@]})
+  extraAfter=("-margs" ${extraAfter[@]})
+  extraBefore=("--GNATBIND=@out@/bin/gnatbind --GNATLINK=@out@/bin/gnatlink ")
 fi
 
 # Add the flags that should be passed to the linker (and prevent

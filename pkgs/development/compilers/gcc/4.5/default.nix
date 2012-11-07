@@ -360,7 +360,7 @@ stdenv.mkDerivation ({
   passthru = { inherit langC langCC langAda langFortran langVhdl
       enableMultilib version; };
 
-  enableParallelBuilding = !langAda && !profiledCompiler;
+  enableParallelBuilding = !profiledCompiler;
 
   meta = {
     homepage = http://gcc.gnu.org/;
