@@ -1,5 +1,5 @@
 diff --git a/gcc/vhdl/Make-lang.in b/gcc/vhdl/Make-lang.in
-index e9c9b23..b5b3571 100644
+index e9c9b23..c50a967 100644
 --- a/gcc/vhdl/Make-lang.in
 +++ b/gcc/vhdl/Make-lang.in
 @@ -101,26 +101,25 @@ AGCC_CFLAGS=-g -Wall -DIN_GCC $(AGCC_INC_FLAGS)
@@ -51,7 +51,7 @@ index e9c9b23..b5b3571 100644
  	$(GNATMAKE) -o $@ -aI$(srcdir)/vhdl -aOvhdl ortho_gcc-main \
  	 -bargs -E -cargs $(CFLAGS) $(GHDL_ADAFLAGS) \
 -	 -largs $(AGCC_OBJS) $(LIBS) $(GMPLIBS) -lmpc -lmpfr -lgmp -ldl -lz
-+	 -largs $(AGCC_OBJS) $(LIBS) $(BACKENDLIBS) $(LDFLAGS)
++	 -largs --LINK=$(LINKER) $(AGCC_OBJS) $(LIBS) $(BACKENDLIBS) $(LDFLAGS)
 +
 +
 +DRIVER_OBJECTS := vec.o \
