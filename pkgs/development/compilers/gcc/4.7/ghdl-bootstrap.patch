@@ -1,5 +1,5 @@
 diff --git a/gcc/vhdl/Make-lang.in b/gcc/vhdl/Make-lang.in
-index e9c9b23..40cc122 100644
+index e9c9b23..b5b3571 100644
 --- a/gcc/vhdl/Make-lang.in
 +++ b/gcc/vhdl/Make-lang.in
 @@ -101,26 +101,25 @@ AGCC_CFLAGS=-g -Wall -DIN_GCC $(AGCC_INC_FLAGS)
@@ -46,7 +46,7 @@ index e9c9b23..40cc122 100644
  
  agcc-clean: force
  	$(RM) -f $(agcc_objdir)/*.o
-@@ -141,10 +140,20 @@ ghdl1$(exeext): $(AGCC_OBJS) $(AGCC_DEPS) force
+@@ -141,14 +140,24 @@ ghdl1$(exeext): $(AGCC_OBJS) $(AGCC_DEPS) force
  	 -cargs $(CFLAGS) $(GHDL_ADAFLAGS)
  	$(GNATMAKE) -o $@ -aI$(srcdir)/vhdl -aOvhdl ortho_gcc-main \
  	 -bargs -E -cargs $(CFLAGS) $(GHDL_ADAFLAGS) \
@@ -69,6 +69,11 @@ index e9c9b23..40cc122 100644
  	$(MAKE_IN_VHDL) ../ghdl$(exeext)
  
  # Ghdl libraries.
+-ghdllib: ghdl$(exeext) $(GCC_PASSES) force
++ghdllib: ghdl$(exeext) $(GCC_PASSES) ghdl1$(exeext) force
+ 	$(MAKE_IN_VHDL) GRT_FLAGS="-O -g" ghdllib
+ 
+ # Build hooks:
 diff --git a/gcc/vhdl/Makefile.in b/gcc/vhdl/Makefile.in
 index 96e5087..b8d2ed0 100644
 --- a/gcc/vhdl/Makefile.in
