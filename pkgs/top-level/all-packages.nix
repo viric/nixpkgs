@@ -2247,7 +2247,7 @@ let
     langC = true;
     langAda = true;
     profiledCompiler = false;
-    gnatboot = gnat45;
+    gnat = gnat45;
     # We can't use the ppl stuff, because we would have
     # libstdc++ problems.
     # ppl = null;
@@ -2295,10 +2295,12 @@ let
     inherit noSysDirs;
     name = "ghdl";
     langVhdl = true;
-    langCC = false;
+    langCC = true;
     langC = false;
+    langAda = true;
     profiledCompiler = false;
     enableMultilib = false;
+    gnat = gnat47;
 
     cross = null;
     libcCross = if crossSystem != null then libcCross else null;

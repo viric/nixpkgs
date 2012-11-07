@@ -17,7 +17,6 @@
 , libX11 ? null, libXt ? null, libSM ? null, libICE ? null, libXtst ? null
 , libXrender ? null, xproto ? null, renderproto ? null, xextproto ? null
 , libXrandr ? null, libXi ? null, inputproto ? null, randrproto ? null
-, gnatboot ? null
 , enableMultilib ? false
 , enablePlugin ? true             # whether to support user-supplied plug-ins
 , name ? "gcc"
@@ -34,8 +33,7 @@
 assert langJava     -> zip != null && unzip != null
                        && zlib != null && boehmgc != null
                        && perl != null;  # for `--enable-java-home'
-assert langAda      -> gnatboot != null;
-assert langVhdl     -> gnat != null;
+assert (langAda || langVhdl) -> gnat != null;
 
 # LTO needs libelf and zlib.
 assert libelf != null -> zlib != null;
@@ -242,8 +240,7 @@ stdenv.mkDerivation ({
     ++ (optionals langJava [ boehmgc zip unzip ])
     ++ (optionals javaAwtGtk ([ gtk libart_lgpl ] ++ xlibs))
     ++ (optionals (cross != null) [binutilsCross])
-    ++ (optionals langAda [gnatboot])
-    ++ (optionals langVhdl [gnat])
+    ++ (optionals (langAda || langVhdl) [gnat])
 
     # The builder relies on GNU sed (for instance, Darwin's `sed' fails with
     # "-i may not be used with stdin"), and `stdenvNative' doesn't provide it.
