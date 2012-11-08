@@ -89,23 +89,25 @@ index 96e5087..b8d2ed0 100644
  drvdir:
  	mkdir $@
 diff --git a/gcc/vhdl/ortho-lang.c b/gcc/vhdl/ortho-lang.c
-index 7aa21a4..c613e1e 100644
+index 7aa21a4..72e08e4 100644
 --- a/gcc/vhdl/ortho-lang.c
 +++ b/gcc/vhdl/ortho-lang.c
-@@ -24,6 +24,12 @@
+@@ -24,6 +24,14 @@
  #include "tree-dump.h"
  #include "tree-iterator.h"
  
 +#ifdef __cplusplus
 +#define EXTERN_C extern "C"
++#define ENUM_KEYWORD
 +#else
 +#define EXTERN_C extern
++#define ENUM_KEYWORD enum
 +#endif
 +
  static tree type_for_size (unsigned int precision, int unsignedp);
  
  const int tree_identifier_size = sizeof (struct tree_identifier);
-@@ -217,7 +223,7 @@ pop_stmts (void)
+@@ -217,7 +225,7 @@ pop_stmts (void)
  static GTY(()) tree top;
  
  static GTY(()) tree stack_alloc_function_ptr;
@@ -114,7 +116,7 @@ index 7aa21a4..c613e1e 100644
  
  static bool
  global_bindings_p (void)
-@@ -241,7 +247,7 @@ static tree
+@@ -241,7 +249,7 @@ static tree
  builtin_function (const char *name,
  		  tree type,
  		  int function_code,
@@ -123,7 +125,7 @@ index 7aa21a4..c613e1e 100644
  		  const char *library_name,
  		  tree attrs ATTRIBUTE_UNUSED);
  
-@@ -358,7 +364,7 @@ ortho_post_options (const char **pfilename)
+@@ -358,7 +366,7 @@ ortho_post_options (const char **pfilename)
    return false;
  }
  
@@ -132,7 +134,7 @@ index 7aa21a4..c613e1e 100644
  
  static bool
  ortho_handle_option (size_t code, const char *arg, int value,
-@@ -387,7 +393,7 @@ ortho_handle_option (size_t code, const char *arg, int value,
+@@ -387,7 +395,7 @@ ortho_handle_option (size_t code, const char *arg, int value,
  	  
  	  len1 = strlen (opt);
  	  len2 = strlen (arg);
@@ -141,7 +143,7 @@ index 7aa21a4..c613e1e 100644
  	  memcpy (nopt, opt, len1);
  	  memcpy (nopt + len1, arg, len2);
  	  nopt[len1 + len2] = 0;
-@@ -397,7 +403,7 @@ ortho_handle_option (size_t code, const char *arg, int value,
+@@ -397,7 +405,7 @@ ortho_handle_option (size_t code, const char *arg, int value,
      }
  }
  
@@ -150,7 +152,7 @@ index 7aa21a4..c613e1e 100644
  
  static void
  ortho_parse_file (void)
-@@ -607,7 +613,7 @@ static tree
+@@ -607,7 +615,7 @@ static tree
  builtin_function (const char *name,
  		  tree type,
  		  int function_code,
@@ -159,18 +161,18 @@ index 7aa21a4..c613e1e 100644
  		  const char *library_name,
  		  tree attrs ATTRIBUTE_UNUSED)
  {
-@@ -617,8 +623,8 @@ builtin_function (const char *name,
+@@ -617,8 +625,8 @@ builtin_function (const char *name,
    if (library_name)
      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
    make_decl_rtl (decl);
 -  DECL_BUILT_IN_CLASS (decl) = class;
 -  DECL_FUNCTION_CODE (decl) = function_code;
 +  DECL_BUILT_IN_CLASS (decl) = bclass;
-+  DECL_FUNCTION_CODE (decl) = (built_in_function) function_code;
++  DECL_FUNCTION_CODE (decl) = (ENUM_KEYWORD built_in_function) function_code;
    DECL_SOURCE_LOCATION (decl) = input_location;
    return decl;
  }
-@@ -886,7 +892,7 @@ static enum tree_code ON_op_to_TREE_CODE[ON_LAST] = {
+@@ -886,7 +894,7 @@ static enum tree_code ON_op_to_TREE_CODE[ON_LAST] = {
    GT_EXPR,
  };
  
@@ -179,7 +181,7 @@ index 7aa21a4..c613e1e 100644
  new_dyadic_op (enum ON_op_kind kind, tree left, tree right)
  {
    tree left_type;
-@@ -911,13 +917,13 @@ new_dyadic_op (enum ON_op_kind kind, tree left, tree right)
+@@ -911,13 +919,13 @@ new_dyadic_op (enum ON_op_kind kind, tree left, tree right)
    return build2 (code, left_type, left, right);
  }
  
@@ -195,7 +197,7 @@ index 7aa21a4..c613e1e 100644
  new_compare_op (enum ON_op_kind kind, tree left, tree right, tree ntype)
  {
    if (TREE_CODE (ntype) != BOOLEAN_TYPE)
-@@ -927,7 +933,7 @@ new_compare_op (enum ON_op_kind kind, tree left, tree right, tree ntype)
+@@ -927,7 +935,7 @@ new_compare_op (enum ON_op_kind kind, tree left, tree right, tree ntype)
    return build2 (ON_op_to_TREE_CODE[kind], ntype, left, right);
  }
  
@@ -204,7 +206,7 @@ index 7aa21a4..c613e1e 100644
  new_convert_ov (tree val, tree rtype)
  {
    tree val_type;
-@@ -990,7 +996,7 @@ new_convert_ov (tree val, tree rtype)
+@@ -990,7 +998,7 @@ new_convert_ov (tree val, tree rtype)
    return build1 (code, rtype, val);
  }
  
@@ -213,7 +215,7 @@ index 7aa21a4..c613e1e 100644
  new_alloca (tree rtype, tree size)
  {
    tree res;
-@@ -1007,7 +1013,7 @@ new_alloca (tree rtype, tree size)
+@@ -1007,7 +1015,7 @@ new_alloca (tree rtype, tree size)
    return fold_convert (rtype, res);
  }
  
@@ -222,7 +224,7 @@ index 7aa21a4..c613e1e 100644
  new_signed_literal (tree ltype, long long value)
  {
    tree res;
-@@ -1024,7 +1030,7 @@ new_signed_literal (tree ltype, long long value)
+@@ -1024,7 +1032,7 @@ new_signed_literal (tree ltype, long long value)
    return res;
  }
  
@@ -231,7 +233,7 @@ index 7aa21a4..c613e1e 100644
  new_unsigned_literal (tree ltype, unsigned long long value)
  {
    tree res;
-@@ -1041,7 +1047,7 @@ new_unsigned_literal (tree ltype, unsigned long long value)
+@@ -1041,7 +1049,7 @@ new_unsigned_literal (tree ltype, unsigned long long value)
    return res;
  }
  
@@ -240,7 +242,7 @@ index 7aa21a4..c613e1e 100644
  new_null_access (tree ltype)
  {
    tree res;
-@@ -1050,7 +1056,7 @@ new_null_access (tree ltype)
+@@ -1050,7 +1058,7 @@ new_null_access (tree ltype)
    return res;
  }
  
@@ -249,7 +251,7 @@ index 7aa21a4..c613e1e 100644
  new_float_literal (tree ltype, double value)
  {
    signed long long s;
-@@ -1086,20 +1092,20 @@ struct GTY (()) o_element_list
+@@ -1086,20 +1094,20 @@ struct GTY (()) o_element_list
    struct chain_constr_type chain;
  };
  
@@ -273,7 +275,7 @@ index 7aa21a4..c613e1e 100644
  start_uncomplete_record_type (tree res, struct o_element_list *elements)
  {
    elements->res = res;
-@@ -1120,7 +1126,7 @@ new_record_union_field (struct o_element_list *list,
+@@ -1120,7 +1128,7 @@ new_record_union_field (struct o_element_list *list,
    *el = res;
  }
  
@@ -282,7 +284,7 @@ index 7aa21a4..c613e1e 100644
  new_record_field (struct o_element_list *list,
  		  tree *el,
  		  tree ident,
-@@ -1129,7 +1135,7 @@ new_record_field (struct o_element_list *list,
+@@ -1129,7 +1137,7 @@ new_record_field (struct o_element_list *list,
    return new_record_union_field (list, el, ident, etype);
  }
  
@@ -291,7 +293,7 @@ index 7aa21a4..c613e1e 100644
  finish_record_type (struct o_element_list *elements, tree *res)
  {
    TYPE_FIELDS (elements->res) = elements->chain.first;
-@@ -1144,14 +1150,14 @@ finish_record_type (struct o_element_list *elements, tree *res)
+@@ -1144,14 +1152,14 @@ finish_record_type (struct o_element_list *elements, tree *res)
  }
  
  
@@ -308,7 +310,7 @@ index 7aa21a4..c613e1e 100644
  new_union_field (struct o_element_list *elements,
  		 tree *el,
  		 tree ident,
-@@ -1160,7 +1166,7 @@ new_union_field (struct o_element_list *elements,
+@@ -1160,7 +1168,7 @@ new_union_field (struct o_element_list *elements,
    return new_record_union_field (elements, el, ident, etype);
  }
  
@@ -317,7 +319,7 @@ index 7aa21a4..c613e1e 100644
  finish_union_type (struct o_element_list *elements, tree *res)
  {
    TYPE_FIELDS (elements->res) = elements->chain.first;
-@@ -1168,19 +1174,19 @@ finish_union_type (struct o_element_list *elements, tree *res)
+@@ -1168,19 +1176,19 @@ finish_union_type (struct o_element_list *elements, tree *res)
    *res = elements->res;
  }
  
@@ -340,7 +342,7 @@ index 7aa21a4..c613e1e 100644
  new_float_type (void)
  {
    tree res;
-@@ -1191,7 +1197,7 @@ new_float_type (void)
+@@ -1191,7 +1199,7 @@ new_float_type (void)
    return res;
  }
  
@@ -349,7 +351,7 @@ index 7aa21a4..c613e1e 100644
  new_access_type (tree dtype)
  {
    tree res;
-@@ -1212,7 +1218,7 @@ new_access_type (tree dtype)
+@@ -1212,7 +1220,7 @@ new_access_type (tree dtype)
      return build_pointer_type (dtype);
  }
  
@@ -358,7 +360,7 @@ index 7aa21a4..c613e1e 100644
  finish_access_type (tree atype, tree dtype)
  {
    if (TREE_CODE (atype) != POINTER_TYPE
-@@ -1222,14 +1228,14 @@ finish_access_type (tree atype, tree dtype)
+@@ -1222,14 +1230,14 @@ finish_access_type (tree atype, tree dtype)
    TREE_TYPE (atype) = dtype;
  }
  
@@ -375,7 +377,7 @@ index 7aa21a4..c613e1e 100644
  new_constrained_array_type (tree atype, tree length)
  {
    tree range_type;
-@@ -1260,7 +1266,7 @@ new_constrained_array_type (tree atype, tree length)
+@@ -1260,7 +1268,7 @@ new_constrained_array_type (tree atype, tree length)
    return res;
  }
  
@@ -384,7 +386,7 @@ index 7aa21a4..c613e1e 100644
  new_boolean_type (tree *res,
  		  tree false_id, tree *false_e,
  		  tree true_id, tree *true_e)
-@@ -1280,7 +1286,7 @@ struct o_enum_list
+@@ -1280,7 +1288,7 @@ struct o_enum_list
    int size;
  };
  
@@ -393,7 +395,7 @@ index 7aa21a4..c613e1e 100644
  start_enum_type (struct o_enum_list *list, int size)
  {
    list->res = make_node (ENUMERAL_TYPE);
-@@ -1289,7 +1295,7 @@ start_enum_type (struct o_enum_list *list, int size)
+@@ -1289,7 +1297,7 @@ start_enum_type (struct o_enum_list *list, int size)
    list->size = size;
  }
  
@@ -402,7 +404,7 @@ index 7aa21a4..c613e1e 100644
  new_enum_literal (struct o_enum_list *list, tree ident, tree *res)
  {
    *res = build_int_cstu (list->res, list->num);
-@@ -1297,7 +1303,7 @@ new_enum_literal (struct o_enum_list *list, tree ident, tree *res)
+@@ -1297,7 +1305,7 @@ new_enum_literal (struct o_enum_list *list, tree ident, tree *res)
    list->num++;
  }
  
@@ -411,7 +413,7 @@ index 7aa21a4..c613e1e 100644
  finish_enum_type (struct o_enum_list *list, tree *res)
  {
    *res = list->res;
-@@ -1315,20 +1321,20 @@ struct GTY (()) o_record_aggr_list
+@@ -1315,20 +1323,20 @@ struct GTY (()) o_record_aggr_list
    struct chain_constr_type chain;
  };
  
@@ -435,7 +437,7 @@ index 7aa21a4..c613e1e 100644
  finish_record_aggr (struct o_record_aggr_list *list, tree *res)
  {
    *res = build_constructor_from_list (list->atype, list->chain.first);
-@@ -1340,27 +1346,27 @@ struct GTY (()) o_array_aggr_list
+@@ -1340,27 +1348,27 @@ struct GTY (()) o_array_aggr_list
    struct chain_constr_type chain;
  };
  
@@ -467,7 +469,7 @@ index 7aa21a4..c613e1e 100644
  new_union_aggr (tree atype, tree field, tree value)
  {
    tree res;
-@@ -1370,7 +1376,7 @@ new_union_aggr (tree atype, tree field, tree value)
+@@ -1370,7 +1378,7 @@ new_union_aggr (tree atype, tree field, tree value)
    return res;
  }
  
@@ -476,7 +478,7 @@ index 7aa21a4..c613e1e 100644
  new_indexed_element (tree arr, tree index)
  {
    ortho_mark_addressable (arr);
-@@ -1378,7 +1384,7 @@ new_indexed_element (tree arr, tree index)
+@@ -1378,7 +1386,7 @@ new_indexed_element (tree arr, tree index)
  		 arr, index, NULL_TREE, NULL_TREE);
  }
  
@@ -485,7 +487,7 @@ index 7aa21a4..c613e1e 100644
  new_slice (tree arr, tree res_type, tree index)
  {
  #if 0
-@@ -1408,7 +1414,7 @@ new_slice (tree arr, tree res_type, tree index)
+@@ -1408,7 +1416,7 @@ new_slice (tree arr, tree res_type, tree index)
  #endif
  }
  
@@ -494,7 +496,7 @@ index 7aa21a4..c613e1e 100644
  new_selected_element (tree rec, tree el)
  {
    tree res;
-@@ -1419,7 +1425,7 @@ new_selected_element (tree rec, tree el)
+@@ -1419,7 +1427,7 @@ new_selected_element (tree rec, tree el)
    return res;
  }
  
@@ -503,7 +505,7 @@ index 7aa21a4..c613e1e 100644
  new_access_element (tree acc)
  {
    tree acc_type;
-@@ -1431,7 +1437,7 @@ new_access_element (tree acc)
+@@ -1431,7 +1439,7 @@ new_access_element (tree acc)
    return build1 (INDIRECT_REF, TREE_TYPE (acc_type), acc);
  }
  
@@ -512,7 +514,7 @@ index 7aa21a4..c613e1e 100644
  new_offsetof (tree field, tree rtype)
  {
    tree off;
-@@ -1459,7 +1465,7 @@ new_offsetof (tree field, tree rtype)
+@@ -1459,7 +1467,7 @@ new_offsetof (tree field, tree rtype)
    return res;
  }
  
@@ -521,7 +523,7 @@ index 7aa21a4..c613e1e 100644
  new_sizeof (tree atype, tree rtype)
  {
   tree size;
-@@ -1558,25 +1564,25 @@ array_to_pointer_conversion (tree exp)
+@@ -1558,25 +1566,25 @@ array_to_pointer_conversion (tree exp)
      }
  }
  
@@ -551,7 +553,7 @@ index 7aa21a4..c613e1e 100644
  new_global_unchecked_address (tree lvalue, tree atype)
  {
    return ortho_build_addr (lvalue, atype);
-@@ -1590,25 +1596,25 @@ build_function_ptr (tree func)
+@@ -1590,25 +1598,25 @@ build_function_ptr (tree func)
  		 build_pointer_type (TREE_TYPE (func)), func);
  }
  
@@ -581,7 +583,7 @@ index 7aa21a4..c613e1e 100644
  new_type_decl (tree ident, tree atype)
  {
    tree decl;
-@@ -1653,7 +1659,7 @@ set_storage (tree Node, enum o_storage storage)
+@@ -1653,7 +1661,7 @@ set_storage (tree Node, enum o_storage storage)
      }
  }
  
@@ -590,7 +592,7 @@ index 7aa21a4..c613e1e 100644
  new_const_decl (tree *res, tree ident, enum o_storage storage, tree atype)
  {
    tree cst;
-@@ -1678,12 +1684,12 @@ new_const_decl (tree *res, tree ident, enum o_storage storage, tree atype)
+@@ -1678,12 +1686,12 @@ new_const_decl (tree *res, tree ident, enum o_storage storage, tree atype)
    *res = cst;
  }
  
@@ -605,7 +607,7 @@ index 7aa21a4..c613e1e 100644
  finish_const_value (tree *cst, tree val)
  {
    DECL_INITIAL (*cst) = val;
-@@ -1693,7 +1699,7 @@ finish_const_value (tree *cst, tree val)
+@@ -1693,7 +1701,7 @@ finish_const_value (tree *cst, tree val)
          (*cst, current_function_decl == NULL_TREE, 0);
  }
  
@@ -614,7 +616,7 @@ index 7aa21a4..c613e1e 100644
  new_var_decl (tree *res, tree ident, enum o_storage storage, tree atype)
  {
    tree var;
-@@ -1732,7 +1738,7 @@ struct GTY (()) o_inter_list
+@@ -1732,7 +1740,7 @@ struct GTY (()) o_inter_list
    struct chain_constr_type param_chain;
  };
  
@@ -623,7 +625,7 @@ index 7aa21a4..c613e1e 100644
  start_function_decl (struct o_inter_list *interfaces,
  		     tree ident,
  		     enum o_storage storage,
-@@ -1745,7 +1751,7 @@ start_function_decl (struct o_inter_list *interfaces,
+@@ -1745,7 +1753,7 @@ start_function_decl (struct o_inter_list *interfaces,
    list_init (&interfaces->param_list);
  }
  
@@ -632,7 +634,7 @@ index 7aa21a4..c613e1e 100644
  start_procedure_decl (struct o_inter_list *interfaces,
  		      tree ident,
  		      enum o_storage storage)
-@@ -1753,7 +1759,7 @@ start_procedure_decl (struct o_inter_list *interfaces,
+@@ -1753,7 +1761,7 @@ start_procedure_decl (struct o_inter_list *interfaces,
    start_function_decl (interfaces, ident, storage, void_type_node);
  }
  
@@ -641,7 +643,7 @@ index 7aa21a4..c613e1e 100644
  new_interface_decl (struct o_inter_list *interfaces,
  		    tree *res,
  		    tree ident,
-@@ -1781,7 +1787,7 @@ new_interface_decl (struct o_inter_list *interfaces,
+@@ -1781,7 +1789,7 @@ new_interface_decl (struct o_inter_list *interfaces,
    *res = r;
  }
  
@@ -650,7 +652,7 @@ index 7aa21a4..c613e1e 100644
  finish_subprogram_decl (struct o_inter_list *interfaces, tree *res)
  {
    tree decl;
-@@ -1839,7 +1845,7 @@ finish_subprogram_decl (struct o_inter_list *interfaces, tree *res)
+@@ -1839,7 +1847,7 @@ finish_subprogram_decl (struct o_inter_list *interfaces, tree *res)
    *res = decl;
  }
  
@@ -659,7 +661,7 @@ index 7aa21a4..c613e1e 100644
  start_subprogram_body (tree func)
  {
    if (current_function_decl != DECL_CONTEXT (func))
-@@ -1853,7 +1859,7 @@ start_subprogram_body (tree func)
+@@ -1853,7 +1861,7 @@ start_subprogram_body (tree func)
    push_binding ();
  }
  
@@ -668,7 +670,7 @@ index 7aa21a4..c613e1e 100644
  finish_subprogram_body (void)
  {
    tree bind;
-@@ -1895,20 +1901,20 @@ finish_subprogram_body (void)
+@@ -1895,20 +1903,20 @@ finish_subprogram_body (void)
  }
  
  
@@ -692,7 +694,7 @@ index 7aa21a4..c613e1e 100644
  finish_declare_stmt (void)
  {
    tree bind;
-@@ -1925,20 +1931,20 @@ struct GTY (()) o_assoc_list
+@@ -1925,20 +1933,20 @@ struct GTY (()) o_assoc_list
    VEC(tree,gc) *list; 
  };
  
@@ -716,7 +718,7 @@ index 7aa21a4..c613e1e 100644
  new_function_call (struct o_assoc_list *assocs)
  {
    return build_call_vec (TREE_TYPE (TREE_TYPE (assocs->subprg)),
-@@ -1946,7 +1952,7 @@ new_function_call (struct o_assoc_list *assocs)
+@@ -1946,7 +1954,7 @@ new_function_call (struct o_assoc_list *assocs)
  			  assocs->list);
  }
  
@@ -725,7 +727,7 @@ index 7aa21a4..c613e1e 100644
  new_procedure_call (struct o_assoc_list *assocs)
  {
    tree res;
-@@ -1958,7 +1964,7 @@ new_procedure_call (struct o_assoc_list *assocs)
+@@ -1958,7 +1966,7 @@ new_procedure_call (struct o_assoc_list *assocs)
    append_stmt (res);
  }
  
@@ -734,7 +736,7 @@ index 7aa21a4..c613e1e 100644
  new_assign_stmt (tree target, tree value)
  {
    tree n;
-@@ -1968,7 +1974,7 @@ new_assign_stmt (tree target, tree value)
+@@ -1968,7 +1976,7 @@ new_assign_stmt (tree target, tree value)
    append_stmt (n);
  }
  
@@ -743,7 +745,7 @@ index 7aa21a4..c613e1e 100644
  new_func_return_stmt (tree value)
  {
    tree assign;
-@@ -1983,7 +1989,7 @@ new_func_return_stmt (tree value)
+@@ -1983,7 +1991,7 @@ new_func_return_stmt (tree value)
    append_stmt (stmt);
  }
  
@@ -752,7 +754,7 @@ index 7aa21a4..c613e1e 100644
  new_proc_return_stmt (void)
  {
    tree stmt;
-@@ -1999,7 +2005,7 @@ struct GTY (()) o_if_block
+@@ -1999,7 +2007,7 @@ struct GTY (()) o_if_block
    tree stmt;
  };
  
@@ -761,7 +763,7 @@ index 7aa21a4..c613e1e 100644
  start_if_stmt (struct o_if_block *block, tree cond)
  {
    tree stmt;
-@@ -2012,7 +2018,7 @@ start_if_stmt (struct o_if_block *block, tree cond)
+@@ -2012,7 +2020,7 @@ start_if_stmt (struct o_if_block *block, tree cond)
    push_stmts (stmts);
  }
  
@@ -770,7 +772,7 @@ index 7aa21a4..c613e1e 100644
  new_elsif_stmt (struct o_if_block *block, tree cond)
  {
    tree stmts;
-@@ -2026,7 +2032,7 @@ new_elsif_stmt (struct o_if_block *block, tree cond)
+@@ -2026,7 +2034,7 @@ new_elsif_stmt (struct o_if_block *block, tree cond)
    push_stmts (stmts);
  }
  
@@ -779,7 +781,7 @@ index 7aa21a4..c613e1e 100644
  new_else_stmt (struct o_if_block *block)
  {
    tree stmts;
-@@ -2037,7 +2043,7 @@ new_else_stmt (struct o_if_block *block)
+@@ -2037,7 +2045,7 @@ new_else_stmt (struct o_if_block *block)
    push_stmts (stmts);
  }
  
@@ -788,7 +790,7 @@ index 7aa21a4..c613e1e 100644
  finish_if_stmt (struct o_if_block *block)
  {
    pop_stmts ();
-@@ -2068,7 +2074,7 @@ build_label (void)
+@@ -2068,7 +2076,7 @@ build_label (void)
    return res;
  }
  
@@ -797,7 +799,7 @@ index 7aa21a4..c613e1e 100644
  start_loop_stmt (struct o_snode *label)
  {
    tree stmt;
-@@ -2081,7 +2087,7 @@ start_loop_stmt (struct o_snode *label)
+@@ -2081,7 +2089,7 @@ start_loop_stmt (struct o_snode *label)
    label->end_label = build_label ();
  }
  
@@ -806,7 +808,7 @@ index 7aa21a4..c613e1e 100644
  finish_loop_stmt (struct o_snode *label)
  {
    tree stmt;
-@@ -2098,7 +2104,7 @@ finish_loop_stmt (struct o_snode *label)
+@@ -2098,7 +2106,7 @@ finish_loop_stmt (struct o_snode *label)
      }
  }
  
@@ -815,7 +817,7 @@ index 7aa21a4..c613e1e 100644
  new_exit_stmt (struct o_snode *l)
  {
    tree stmt;
-@@ -2108,7 +2114,7 @@ new_exit_stmt (struct o_snode *l)
+@@ -2108,7 +2116,7 @@ new_exit_stmt (struct o_snode *l)
    TREE_USED (l->end_label) = 1;
  }
  
@@ -824,7 +826,7 @@ index 7aa21a4..c613e1e 100644
  new_next_stmt (struct o_snode *l)
  {
    tree stmt;
-@@ -2124,7 +2130,7 @@ struct GTY (()) o_case_block
+@@ -2124,7 +2132,7 @@ struct GTY (()) o_case_block
    int add_break;
  };
  
@@ -833,7 +835,7 @@ index 7aa21a4..c613e1e 100644
  start_case_stmt (struct o_case_block *block, tree value)
  {
    tree stmt;
-@@ -2138,7 +2144,7 @@ start_case_stmt (struct o_case_block *block, tree value)
+@@ -2138,7 +2146,7 @@ start_case_stmt (struct o_case_block *block, tree value)
    push_stmts (stmts);
  }
  
@@ -842,7 +844,7 @@ index 7aa21a4..c613e1e 100644
  start_choice (struct o_case_block *block)
  {
    tree stmt;
-@@ -2152,7 +2158,7 @@ start_choice (struct o_case_block *block)
+@@ -2152,7 +2160,7 @@ start_choice (struct o_case_block *block)
      }
  }
  
@@ -851,7 +853,7 @@ index 7aa21a4..c613e1e 100644
  new_expr_choice (struct o_case_block *block, tree expr)
  {
    tree stmt;
-@@ -2164,7 +2170,7 @@ new_expr_choice (struct o_case_block *block, tree expr)
+@@ -2164,7 +2172,7 @@ new_expr_choice (struct o_case_block *block, tree expr)
    append_stmt (stmt);
  }
  
@@ -860,7 +862,7 @@ index 7aa21a4..c613e1e 100644
  new_range_choice (struct o_case_block *block, tree low, tree high)
  {
    tree stmt;
-@@ -2173,7 +2179,7 @@ new_range_choice (struct o_case_block *block, tree low, tree high)
+@@ -2173,7 +2181,7 @@ new_range_choice (struct o_case_block *block, tree low, tree high)
    append_stmt (stmt);
  }
  
@@ -869,7 +871,7 @@ index 7aa21a4..c613e1e 100644
  new_default_choice (struct o_case_block *block)
  {
    tree stmt;
-@@ -2182,13 +2188,13 @@ new_default_choice (struct o_case_block *block)
+@@ -2182,13 +2190,13 @@ new_default_choice (struct o_case_block *block)
    append_stmt (stmt);
  }
  
@@ -885,7 +887,7 @@ index 7aa21a4..c613e1e 100644
  finish_case_stmt (struct o_case_block *block)
  {
    tree stmt;
-@@ -2198,7 +2204,7 @@ finish_case_stmt (struct o_case_block *block)
+@@ -2198,7 +2206,7 @@ finish_case_stmt (struct o_case_block *block)
    append_stmt (stmt);
  }
  
@@ -894,7 +896,7 @@ index 7aa21a4..c613e1e 100644
  compare_identifier_string (tree id, const char *str, size_t len)
  {
    if (IDENTIFIER_LENGTH (id) != len)
-@@ -2209,13 +2215,25 @@ compare_identifier_string (tree id, const char *str, size_t len)
+@@ -2209,13 +2217,25 @@ compare_identifier_string (tree id, const char *str, size_t len)
      return false;
  }
  
