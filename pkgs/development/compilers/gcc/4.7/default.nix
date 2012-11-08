@@ -7,6 +7,7 @@
 , profiledCompiler ? false
 , staticCompiler ? false
 , enableShared ? true
+, enableBootstrap ? true
 , texinfo ? null
 , perl ? null # optional, for texi2pod (then pod2man); required for Java
 , gmp, mpfr, mpc, gettext, which
@@ -34,6 +35,7 @@ assert langJava     -> zip != null && unzip != null
                        && zlib != null && boehmgc != null
                        && perl != null;  # for `--enable-java-home'
 assert (langAda || langVhdl) -> gnat != null;
+assert langVhdl -> !enableBootstrap;
 
 # LTO needs libelf and zlib.
 assert libelf != null -> zlib != null;
@@ -275,6 +277,7 @@ stdenv.mkDerivation ({
     --with-gmp=${gmp}
     --with-mpfr=${mpfr}
     --with-mpc=${mpc}
+    ${if enableBootstrap then "" else "--disable-bootstrap"}
     ${if (libelf != null) then "--with-libelf=${libelf}" else ""}
     --disable-libstdcxx-pch
     --without-included-gettext
@@ -405,7 +408,7 @@ stdenv.mkDerivation ({
     else null;
 
   passthru = { inherit langC langCC langAda langFortran langVhdl
-      langGo enableMultilib version; };
+      langGo enableMultilib version enableBootstrap; };
 
   /* From gccinstall.info:
      "parallel make is currently not supported since collisions in profile

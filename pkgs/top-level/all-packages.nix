@@ -2300,6 +2300,7 @@ let
     langAda = true;
     profiledCompiler = false;
     enableMultilib = false;
+    enableBootstrap = false;
     gnat = gnat47;
 
     cross = null;

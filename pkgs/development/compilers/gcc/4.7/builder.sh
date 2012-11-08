@@ -240,7 +240,11 @@ postInstall() {
 
 if test -z "$targetConfig" && test -z "$crossConfig"; then
     if test -z "$profiledCompiler"; then
-        buildFlags="bootstrap $buildFlags"
+        if test -z "$enableBootstrap"; then
+            buildFlags="$buildFlags"
+        else
+            buildFlags="bootstrap $buildFlags"
+        fi
     else    
         buildFlags="profiledbootstrap $buildFlags"
     fi
