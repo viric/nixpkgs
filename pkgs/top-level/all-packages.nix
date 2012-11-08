@@ -2295,9 +2295,8 @@ let
     inherit noSysDirs;
     name = "ghdl";
     langVhdl = true;
-    langCC = true;
+    langCC = false;
     langC = false;
-    langAda = true;
     profiledCompiler = false;
     enableMultilib = false;
     enableBootstrap = false;
