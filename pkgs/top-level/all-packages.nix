@@ -2300,7 +2300,7 @@ let
     profiledCompiler = false;
     enableMultilib = false;
     enableBootstrap = false;
-    gnat = gnat47;
+    gnat = gnat45;
 
     cross = null;
     libcCross = if crossSystem != null then libcCross else null;
