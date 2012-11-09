@@ -51,7 +51,7 @@ index e9c9b23..c50a967 100644
  	$(GNATMAKE) -o $@ -aI$(srcdir)/vhdl -aOvhdl ortho_gcc-main \
  	 -bargs -E -cargs $(CFLAGS) $(GHDL_ADAFLAGS) \
 -	 -largs $(AGCC_OBJS) $(LIBS) $(GMPLIBS) -lmpc -lmpfr -lgmp -ldl -lz
-+	 -largs --LINK=$(LINKER) $(AGCC_OBJS) $(LIBS) $(BACKENDLIBS) $(LDFLAGS)
++	 -largs --LINK=`type -P $(LINKER)` $(AGCC_OBJS) $(LIBS) $(BACKENDLIBS) $(LDFLAGS)
 +
 +
 +DRIVER_OBJECTS := vec.o \
