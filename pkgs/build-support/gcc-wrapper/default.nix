@@ -33,8 +33,8 @@ stdenv.mkDerivation ({
   builder = ./builder.sh;
   setupHook = ./setup-hook.sh;
   gccWrapper = ./gcc-wrapper.sh;
-  gnatWrapper = if (gcc ? langAda && gcc.langAda) then ./gnat-wrapper2.sh else ./gnat-wrapper.sh;
-  gnatlinkWrapper = if (gcc ? langAda && gcc.langAda) then ./gnatlink-wrapper2.sh else ./gnatlink-wrapper.sh;
+  gnatWrapper = ./gnat-wrapper.sh;
+  gnatlinkWrapper = ./gnatlink-wrapper.sh;
   ldWrapper = ./ld-wrapper.sh;
   utils = ./utils.sh;
   addFlags = ./add-flags;
