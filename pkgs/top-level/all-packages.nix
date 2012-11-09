@@ -2215,7 +2215,7 @@ let
     ppl = null;
   });
 
-  gnat45 = wrapGCC (gcc45_real.gcc.override {
+  gnat45 = wrapGCC2 (gcc45_real.gcc.override {
     name = "gnat";
     langCC = false;
     langC = true;
@@ -2228,7 +2228,7 @@ let
     ppl = null;
   });
 
-  gnat46 = wrapGCC (gcc46_real.gcc.override {
+  gnat46 = wrapGCC2 (gcc46_real.gcc.override {
     name = "gnat";
     langCC = false;
     langC = true;
@@ -2241,7 +2241,7 @@ let
     cloog = null;
   });
 
-  gnat47 = wrapGCC (gcc47_real.gcc.override {
+  gnat47 = wrapGCC2 (gcc47_real.gcc.override {
     name = "gnat";
     langCC = true;
     langC = true;
@@ -2678,6 +2678,8 @@ let
   wrapClang = wrapClangWith (import ../build-support/clang-wrapper) glibc;
 
   wrapGCC = wrapGCCWith (import ../build-support/gcc-wrapper) glibc;
+
+  wrapGCC2 = wrapGCCWith (import ../build-support/gcc-wrapper2) glibc;
 
   wrapGCCCross =
     {gcc, libc, binutils, cross, shell ? "", name ? "gcc-cross-wrapper"}:
