@@ -277,7 +277,7 @@ stdenv.mkDerivation ({
     --with-gmp=${gmp}
     --with-mpfr=${mpfr}
     --with-mpc=${mpc}
-    ${if enableBootstrap then "" else "--disable-bootstrap"}
+    ${if enableBootstrap then "" else "--disable-bootstrap --enable-build-with-cxx"}
     ${if (libelf != null) then "--with-libelf=${libelf}" else ""}
     --disable-libstdcxx-pch
     --without-included-gettext
