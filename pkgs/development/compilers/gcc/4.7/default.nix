@@ -63,6 +63,7 @@ let version = "4.7.2";
       ++ optional langFortran ./gfortran-driving.patch
       ++ optional langVhdl ./ghdl_gcc47_patch
       ++ optional langVhdl ./ghdl-bootstrap.patch
+      ++ optional langVhdl ./ghdl_runtime_o2.patch
       ++ optional (stdenv.isGNU || crossGNU) ./hurd-sigrtmin.patch;
 
     javaEcj = fetchurl {
@@ -252,6 +253,8 @@ stdenv.mkDerivation ({
   configureFlagsArray = stdenv.lib.optionals
     (ppl != null && ppl ? dontDisableStatic && ppl.dontDisableStatic)
         [ "--with-host-libstdcxx=-lstdc++ -lgcc_s" ];
+
+  dontStrip = !stripped;
 
   # 'iant' at #go-nuts@freenode, gccgo maintainer, said that
   # they have a bug in 4.7.1 if adding "--disable-static"

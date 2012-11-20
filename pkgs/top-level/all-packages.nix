@@ -2301,6 +2301,7 @@ let
     enableMultilib = false;
     enableBootstrap = false;
     gnat = gnat45;
+    stripped = false;
 
     cross = null;
     libcCross = if crossSystem != null then libcCross else null;
@@ -3263,6 +3264,7 @@ let
 
   gdb = callPackage ../development/tools/misc/gdb {
     hurd = gnu.hurdCross;
+    stdenv = overrideGCC stdenv gnat;
     inherit (gnu) mig;
   };
 

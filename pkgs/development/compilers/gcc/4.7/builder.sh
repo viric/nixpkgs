@@ -50,7 +50,7 @@ if test "$noSysDirs" = "1"; then
     # bootstrap compiler are optimized and (optionally) contain
     # debugging information (info "(gccinstall) Building").
     if test -n "$dontStrip"; then
-	extraFlags="-O2 -g $extraFlags"
+	extraFlags="-O0 -gdwarf-4 $extraFlags"
     else
 	# Don't pass `-g' at all; this saves space while building.
 	extraFlags="-O2 $extraFlags"
@@ -116,6 +116,7 @@ if test "$noSysDirs" = "1"; then
         "${makeFlagsArray[@]}" \
         NATIVE_SYSTEM_HEADER_DIR="$NIX_FIXINC_DUMMY" \
         SYSTEM_HEADER_DIR="$NIX_FIXINC_DUMMY" \
+        CFLAGS="-O0 -gdwarf-4" \
         CFLAGS_FOR_BUILD="$EXTRA_FLAGS $EXTRA_LDFLAGS" \
         CXXFLAGS_FOR_BUILD="$EXTRA_FLAGS $EXTRA_LDFLAGS" \
         CFLAGS_FOR_TARGET="$EXTRA_TARGET_CFLAGS $EXTRA_TARGET_LDFLAGS" \
@@ -185,6 +186,9 @@ preConfigure() {
         cp -R $libcCross/include ../mingw
         configureFlags="$configureFlags --with-build-sysroot=`pwd`/.."
     fi
+
+    configureFlagsArray=(${configureFlagsArray[@]} "CFLAGS=-O0 -gdwarf-4"
+	"CXXFLAGS=-O0 -gdwarf-4")
 
     # Perform the build in a different directory.
     mkdir ../build
