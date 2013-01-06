@@ -7170,6 +7170,11 @@ let
 
   gnunet = callPackage ../applications/networking/p2p/gnunet { };
 
+  gnunet_gtk = callPackage ../applications/networking/p2p/gnunet/gtk.nix {
+    gtk = gtk3;
+    inherit (gnome) libunique libglade;
+  };
+
   gocr = callPackage ../applications/graphics/gocr { };
 
   gobby5 = callPackage ../applications/editors/gobby {
