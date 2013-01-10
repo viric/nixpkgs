@@ -4,12 +4,12 @@
   }:
 
 stdenv.mkDerivation rec {
-  version = "0.39.4";
+  version = "0.4.0.4";
   name = "rigsofrods-${version}";
 
   src = fetchurl {
-    url = mirror://sourceforge/rigsofrods/rigsofrods-source-0.39.4.tar.bz2;
-    sha256 = "1kpjkski0yllwzdki0rjpqvifjs0fwpgs513y4dv4s9wfwan1qcx";
+    url = mirror://sourceforge/rigsofrods/rigsofrods-source-0.4.0.4.tar.bz2;
+    sha256 = "0gz4wavcaspf42wjm7f2w503yr0ypv46mmqqdr2p1azvkjlrm60d";
   };
 
   contentPackSrc = fetchurl {
@@ -30,6 +30,9 @@ stdenv.mkDerivation rec {
     "-DCMAKE_BUILD_TYPE=Release"
   ];
 
+  # To get a proper rpath in RoR, since boost > 1.49
+  NIX_LDFLAGS = "-lboost_system";
+
   installPhase = ''
     sed -e "s@/usr/local/lib/OGRE@${ogre}/lib/OGRE@" -i ../tools/linux/binaries/plugins.cfg
     mkdir -p $out/share/rigsofrods
@@ -42,8 +45,6 @@ stdenv.mkDerivation rec {
     cd packs
     unzip "${contentPackSrc}"
   '';
-
-  patches = [ ./doubleslash.patch ./paths.patch ];
 
   buildInputs = [ wxGTK29 freeimage cmake zziplib mesa boost pkgconfig
     libuuid openal ogre ois curl gtk mygui unzip angelscript

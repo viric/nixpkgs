@@ -8332,9 +8332,7 @@ let
 
   racer = callPackage ../games/racer { };
 
-  rigsofrods = callPackage ../games/rigsofrods {
-    mygui = myguiSvn;
-  };
+  rigsofrods = callPackage ../games/rigsofrods { };
 
   rili = callPackage ../games/rili { };
 

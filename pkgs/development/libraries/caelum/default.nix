@@ -1,11 +1,12 @@
-{ stdenv, fetchurl, cmake, pkgconfig, ois, ogre, boost }:
+{ stdenv, fetchhg, cmake, pkgconfig, ois, ogre, boost }:
 
 stdenv.mkDerivation rec {
-  name = "caelum-0.6.1";
+  name = "caelum-hg-20121122";
 
-  src = fetchurl {
-    url = "http://caelum.googlecode.com/files/${name}.tar.gz";
-    sha256 = "1j995q1a88cikqrxdqsrwzm2asid51xbmkl7vn1grfrdadb15303";
+  src = fetchhg {
+    url = https://code.google.com/p/caelum/;
+    tag = "3b0f1afccf5c";
+    sha256 = "1zishgxn7gqv9bfkii2ahxvydj4894grwpl80134a9fvzgh954yz";
   };
 
   buildInputs = [ ois ogre boost ];
