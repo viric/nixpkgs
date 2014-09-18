@@ -37,8 +37,10 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     autoconf libtool automake libsodium ncurses libopus
-    libvpx check libconfig pkgconfig
+    check libconfig pkgconfig
   ];
+
+  propagatedBuildInputs = [ libvpx ];
 
   doCheck = true;
 
