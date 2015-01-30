@@ -2,8 +2,8 @@ set -e
 
 # Unpack the bootstrap tools tarball.
 echo Unpacking the bootstrap tools...
-$mkdir $out
-$bzip2 -d < $tarball | (cd $out && $cpio -V -i)
+$builder mkdir $out
+$builder bunzip2 -d < $tarball | (cd $out && $builder cpio -i)
 
 # Set the ELF interpreter / RPATH in the bootstrap binaries.
 echo Patching the bootstrap tools...
@@ -52,5 +52,5 @@ EOF
 chmod +x $out/bin/gunzip
 
 # fetchurl needs curl.
-bzip2 -d < $curl > $out/bin/curl
+busybox bunzip2 < $curl > $out/bin/curl
 chmod +x $out/bin/curl
