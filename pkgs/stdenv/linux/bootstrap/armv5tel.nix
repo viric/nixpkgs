@@ -6,7 +6,7 @@
   };
 
   bootstrapTools = import <nix/fetchurl.nix> {
-    url = "http://tarballs.nixos.org/stdenv-linux/armv5tel/r18744/bootstrap-tools.cpio.bz2";
-    sha256 = "1rn4n5kilqmv62dfjfcscbsm0w329k3gyb2v9155fsi1sl2cfzcb";
+    url = "http://192.168.10.4/~viric/tmp/nix/bootstrap-tools.tar.xz";
+    sha256 = "c1ecedab5d7e0939b7f06142c644061a152659d841f3732d37cd6d5c32e98db3";
   };
 }

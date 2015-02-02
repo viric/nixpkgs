@@ -3,7 +3,7 @@ set -e
 # Unpack the bootstrap tools tarball.
 echo Unpacking the bootstrap tools...
 $builder mkdir $out
-$builder bunzip2 -d < $tarball | (cd $out && $builder cpio -i)
+< $tarball $builder unxz | $builder tar x -C $out
 
 # Set the ELF interpreter / RPATH in the bootstrap binaries.
 echo Patching the bootstrap tools...
@@ -23,7 +23,7 @@ for i in $out/bin/* $out/libexec/gcc/*/*/* $out/lib/librt*; do
     LD_LIBRARY_PATH=$out/lib $out/lib/ld-linux*.so.? \
         $out/bin/patchelf --set-interpreter $out/lib/ld-linux*.so.? --set-rpath $out/lib --force-rpath $i
 done
-for i in $out/lib/librt* $out/lib/libcloog* $out/lib/libppl* $out/lib/libgmp*; do
+for i in $out/lib/librt* $out/lib/libcloog* $out/lib/libppl* $out/lib/libgmp* $out/lib/libpcre*; do
     if ! test -f $i; then continue; fi
     if test -L $i; then continue; fi
     echo patching $i
@@ -44,13 +44,21 @@ mv $out/lib/libpthread.so.tmp $out/lib/libpthread.so
 ln -s bash $out/bin/sh
 ln -s bzip2 $out/bin/bunzip2
 
-# Mimic the gunzip script as in gzip installations
+# Provide a gunzip script
 cat > $out/bin/gunzip <<EOF
 #!$out/bin/sh
 exec $out/bin/gzip -d "\$@"
 EOF
 chmod +x $out/bin/gunzip
 
-# fetchurl needs curl.
-busybox bunzip2 < $curl > $out/bin/curl
-chmod +x $out/bin/curl
+# Provide fgrep/egrep.
+echo "#! $out/bin/sh" > $out/bin/egrep
+echo "exec $out/bin/grep -E \"\$@\"" >> $out/bin/egrep
+echo "#! $out/bin/sh" > $out/bin/fgrep
+echo "exec $out/bin/grep -F \"\$@\"" >> $out/bin/fgrep
+
+# Provide xz (actually only xz -d will work).
+echo "#! $out/bin/sh" > $out/bin/xz
+echo "exec $builder unxz \"\$@\"" >> $out/bin/xz
+
+chmod +x $out/bin/egrep $out/bin/fgrep $out/bin/xz
