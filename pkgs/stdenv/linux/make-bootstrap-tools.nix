@@ -171,8 +171,8 @@ rec {
             if [ -L "$i" ]; then continue; fi
             if [ -z "''${i##*/liblto*}" ]; then continue; fi
             echo patching "$i"
-            LD_LIBRARY_PATH=$out/lib $out/lib/ld-linux*.so.2 \
-                $out/bin/patchelf --set-interpreter $out/lib/ld-linux*.so.2 --set-rpath $out/lib --force-rpath "$i"
+            LD_LIBRARY_PATH=$out/lib $out/lib/ld-linux*.so.? \
+                $out/bin/patchelf --set-interpreter $out/lib/ld-linux*.so.? --set-rpath $out/lib --force-rpath "$i"
         done
 
         for i in $out/lib/libpcre*; do
@@ -215,7 +215,7 @@ rec {
         gcc --version
         curl --version
 
-        ldlinux=$(echo ${unpack}/lib/ld-linux*.so.2)
+        ldlinux=$(echo ${unpack}/lib/ld-linux*.so.?)
 
         export CPP="cpp -idirafter ${unpack}/include-glibc -B${unpack}"
         export CC="gcc -idirafter ${unpack}/include-glibc -B${unpack} -Wl,-dynamic-linker,$ldlinux -Wl,-rpath,${unpack}/lib"
