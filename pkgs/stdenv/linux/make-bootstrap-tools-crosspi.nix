@@ -35,8 +35,22 @@ let
       inherit (platform) gcc;
     };
   };
+
+  sheevaplugCrossSystem = {
+    crossSystem = rec {
+      config = "armv5tel-unknown-linux-gnueabi";
+      bigEndian = false;
+      arch = "arm";
+      float = "soft";
+      withTLS = true;
+      libc = "glibc";
+      platform = pkgsNoParams.platforms.sheevaplug;
+      openssl.system = "linux-generic32";
+    };
+  };
   
   selectedCrossSystem =
+    if toolsArch == "armv5l" then sheevaplugCrossSystem else
     if toolsArch == "armv6l" then raspberrypiCrossSystem else
     if toolsArch == "armv7l" then beagleboneCrossSystem else null;
 
@@ -235,6 +249,7 @@ rec {
 }
 
 ); in {
+    armv5l = buildFor "armv5l";
     armv6l = buildFor "armv6l";
     armv7l = buildFor "armv7l";
 }
