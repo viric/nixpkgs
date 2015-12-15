@@ -1,8 +1,10 @@
 { stdenv, fetchurl, pkgconfig, perl, texinfo, yasm
 , alsaLib, bzip2, fontconfig, freetype, gnutls, libiconv, lame, libass, libogg
-, libtheora, libva, libvdpau, libvorbis, libvpx, lzma, libpulseaudio, SDL, soxr
+, libtheora, libva, libvorbis, libvpx, lzma, libpulseaudio, soxr
 , x264, xvidcore, zlib
 , openglSupport ? false, mesa ? null
+, sdlSupport ? !stdenv.isArm, SDL ? null
+, vdpauSupport ? !stdenv.isArm, libvdpau ? null
 # Build options
 , runtimeCpuDetectBuild ? true # Detect CPU capabilities at runtime
 , multithreadBuild ? true # Multithreading via pthreads/win32 threads
@@ -37,7 +39,7 @@
  */
 
 let
-  inherit (stdenv) icCygwin isDarwin isFreeBSD isLinux;
+  inherit (stdenv) icCygwin isDarwin isFreeBSD isLinux isArm;
   inherit (stdenv.lib) optional optionals enableFeature;
 
   cmpVer = builtins.compareVersions;
@@ -137,11 +139,13 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     bzip2 fontconfig freetype gnutls libiconv lame libass libogg libtheora
-    libvdpau libvorbis lzma SDL soxr x264 xvidcore zlib
+    libvorbis lzma soxr x264 xvidcore zlib
   ] ++ optional openglSupport mesa
     ++ optionals (!isDarwin) [ libvpx libpulseaudio ] # Need to be fixed on Darwin
-    ++ optional (isLinux || isFreeBSD) libva
-    ++ optional isLinux alsaLib;
+    ++ optional ((isLinux || isFreeBSD) && !isArm) libva
+    ++ optional isLinux alsaLib
+    ++ optional vdpauSupport libvdpau
+    ++ optional sdlSupport SDL;
 
   enableParallelBuilding = true;
 
@@ -176,7 +180,7 @@ stdenv.mkDerivation rec {
 
   passthru = {
     vaapiSupport = if reqMin "0.6" && (isLinux || isFreeBSD) then true else false;
-    vdpauSupport = true;
+    inherit vdpauSupport;
   };
 
   meta = with stdenv.lib; {
