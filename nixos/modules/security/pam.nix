@@ -260,7 +260,7 @@ let
           ${optionalString cfg.otpwAuth
               "auth sufficient ${pkgs.otpw}/lib/security/pam_otpw.so"}
           ${optionalString cfg.oathAuth
-              "auth sufficient ${pkgs.oathToolkit}/lib/security/pam_oath.so window=5 usersfile=/etc/users.oath"}
+              "auth sufficient ${pkgs.oathToolkit}/lib/security/pam_oath.so ${oathParams}"}
           ${optionalString config.users.ldap.enable
               "auth sufficient ${pam_ldap}/lib/security/pam_ldap.so use_first_pass"}
           ${optionalString config.krb5.enable ''
@@ -303,7 +303,7 @@ let
           ${optionalString cfg.otpwAuth
               "session optional ${pkgs.otpw}/lib/security/pam_otpw.so"}
           ${optionalString cfg.oathAuth
-              "session optional ${pkgs.oathToolkit}/lib/security/pam_oath.so window=5 usersfile=/etc/users.oath"}
+              "session optional ${pkgs.oathToolkit}/lib/security/pam_oath.so ${oathParams}"}
           ${optionalString cfg.startSession
               "session optional ${pkgs.systemd}/lib/security/pam_systemd.so"}
           ${optionalString cfg.forwardXAuth
@@ -339,6 +339,9 @@ let
     { source = pkgs.writeText "${pamService.name}.pam" pamService.text;
       target = "pam.d/${pamService.name}";
     };
+
+  oathParams = "window=5 usersfile=/etc/users.oath digits=6";
+
 
 in
 
