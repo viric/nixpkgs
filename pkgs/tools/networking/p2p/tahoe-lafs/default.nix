@@ -1,6 +1,7 @@
 { fetchurl, lib, unzip, buildPythonPackage, twisted, foolscap, nevow
 , simplejson, zfec, pycryptopp, sqlite3, darcsver, setuptoolsTrial, python
-, setuptoolsDarcs, numpy, nettools, pycrypto, pyasn1, mock, zope_interface }:
+, setuptoolsDarcs, numpy, nettools, pycrypto, pyasn1, mock, zope_interface
+, service_identity }:
 
 # FAILURES: The "running build_ext" phase fails to compile Twisted
 # plugins, because it tries to write them into Twisted's (immutable)
@@ -42,6 +43,7 @@ buildPythonPackage {
   propagatedBuildInputs =
     [ twisted foolscap nevow simplejson zfec pycryptopp sqlite3
       darcsver setuptoolsTrial setuptoolsDarcs pycrypto pyasn1 zope_interface mock
+      service_identity
     ];
 
   postInstall = ''

@@ -8076,14 +8076,14 @@ in modules // {
   });
 
   foolscap = buildPythonPackage (rec {
-    name = "foolscap-0.6.4";
+    name = "foolscap-0.8.0";
 
     src = pkgs.fetchurl {
       url = "http://foolscap.lothar.com/releases/${name}.tar.gz";
-      sha256 = "16cddyk5is0gjfn0ia5n2l4lhdzvbjzlx6sfpy7ddjd3d3fq7ckl";
+      sha256 = "1jg1gdk00agzifpflcnbcfdcmdnxjdsqfal091qmjjgfaa69xd3a";
     };
 
-    propagatedBuildInputs = [ self.twisted self.pyopenssl ];
+    propagatedBuildInputs = [ self.twisted self.pyopenssl self.service_identity ];
 
     meta = {
       homepage = http://foolscap.lothar.com/;
@@ -11127,11 +11127,11 @@ in modules // {
 
   nevow = buildPythonPackage (rec {
     name = "nevow-${version}";
-    version = "0.10.0";
+    version = "0.12.0";
 
     src = pkgs.fetchurl {
       url = "http://pypi.python.org/packages/source/N/Nevow/Nevow-${version}.tar.gz";
-      sha256 = "90631f68f626c8934984908d3df15e7c198939d36be7ead1305479dfc67ff6d0";
+      sha256 = "0sf3dwdv1q0x293v4nkfikks9xxfllwbbqqfyy02clxfr094j15s";
       name = "${name}.tar.gz";
     };
 
@@ -19352,10 +19352,10 @@ in modules // {
     # to packages like carbon (http://stackoverflow.com/questions/19894708/cant-start-carbon-12-04-python-error-importerror-cannot-import-name-daem)
     disabled = isPy3k;
 
-    name = "Twisted-11.1.0";
+    name = "Twisted-13.2.0";
     src = pkgs.fetchurl {
       url = "https://pypi.python.org/packages/source/T/Twisted/${name}.tar.bz2";
-      sha256 = "05agfp17cndhv2w0p559lvknl7nv0xqkg10apc47fm53m8llbfvz";
+      sha256 = "1wrcqv5lvgwk2aq83qb2s2ng2vx14hbjjk2gc30cg6h1iiipal89";
     };
 
     propagatedBuildInputs = with self; [ zope_interface ];
@@ -21275,9 +21275,6 @@ in modules // {
 
     propagatedBuildInputs = with self; [ whisper txamqp zope_interface twisted ];
 
-    # error: invalid command 'test'
-    doCheck = false;
-
     meta = {
       homepage = http://graphite.wikidot.com/;
       description = "Backend data caching and persistence daemon for Graphite";
@@ -22911,6 +22908,18 @@ in modules // {
       license = licenses.lgpl3Plus;
       maintainers = with maintainers; [ odi ];
     };
+  };
+
+  service_identity = buildPythonPackage rec {
+    name = "service_identity-${version}";
+    version = "14.0.0";
+
+    src = pkgs.fetchurl {
+      url = "https://pypi.python.org/packages/source/s/service_identity/service_identity-${version}.tar.gz";
+      md5 = "cea0b0156d73b025ecef660fb51f0d9a";
+    };
+
+    propagatedBuildInputs = [ self.pyopenssl self.characteristic ];
   };
 
   suds = buildPythonPackage rec {
