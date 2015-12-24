@@ -53,6 +53,10 @@ let
 
   # Disable dependency that needs fixes before it will work on Darwin
   disDarwinFix = origArg: minVer: fixArg: if (isDarwin && reqMin minVer) then fixArg else origArg;
+
+  # As above, but disabling also in case of ARM
+  # (libvpx doesn't build on arm)
+  disDarwinAndArmFix = origArg: minVer: fixArg: if (isArm || (isDarwin && reqMin minVer)) then fixArg else origArg;
 in
 
 assert openglSupport -> mesa != null;
@@ -117,14 +121,14 @@ stdenv.mkDerivation rec {
       (ifMinVer "0.6" (enableFeature (isLinux || isFreeBSD) "vaapi"))
       "--enable-vdpau"
       "--enable-libvorbis"
-      (disDarwinFix (ifMinVer "0.6" "--enable-libvpx") "0.6" "--disable-libvpx")
+      (disDarwinAndArmFix (ifMinVer "0.6" "--enable-libvpx") "0.6" "--disable-libvpx")
       (ifMinVer "2.4" "--enable-lzma")
       (ifMinVer "2.2" (enableFeature openglSupport "opengl"))
       (disDarwinFix (ifMinVer "0.9" "--enable-libpulse") "0.9" "--disable-libpulse")
-      (ifMinVer "2.5" "--enable-sdl") # Only configurable since 2.5, auto detected before then
+      (ifMinVer "2.5" (if sdlSupport then "--enable-sdl" else "")) # Only configurable since 2.5, auto detected before then
       (ifMinVer "1.2" "--enable-libsoxr")
       "--enable-libx264"
-      "--enable-libxvid"
+      (if !isArm then "--enable-libxvid" else "")
       "--enable-zlib"
     # Developer flags
       (enableFeature debugDeveloper "debug")
