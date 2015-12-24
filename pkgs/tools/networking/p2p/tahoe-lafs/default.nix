@@ -7,13 +7,17 @@
 # store path. The problem appears to be non-fatal, but there's probably
 # some loss of functionality because of it.
 
-buildPythonPackage rec {
-  name = "tahoe-lafs-1.10.0";
+let
+  version = "1.10.2";
+  name = "tahoe-lafs-${version}";
+in
+buildPythonPackage {
+  inherit name;
   namePrefix = "";
 
   src = fetchurl {
-    url = "http://tahoe-lafs.org/source/tahoe-lafs/releases/allmydata-tahoe-1.10.0.tar.bz2";
-    sha256 = "1qng7j1vykk8zl5da9yklkljvgxfnjky58gcay6dypz91xq1cmcw";
+    url = "http://tahoe-lafs.org/source/tahoe-lafs/releases/allmydata-tahoe-${version}.tar.bz2";
+    sha256 = "1rvv0ik5biy7ji8pg56v0qycnggzr3k6dbg88n555nb6r4cxgmgy";
   };
 
   patchPhase = ''
