@@ -55,7 +55,8 @@ buildPythonPackage {
 
   checkPhase = ''
     # TODO: broken with wheels
-    #${python.interpreter} setup.py trial
+    ln -s $out/bin/.tahoe-wrapped bin/tahoe
+    ${python.interpreter} setup.py trial
   '';
 
   meta = {
