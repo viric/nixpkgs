@@ -8,15 +8,15 @@
 # some loss of functionality because of it.
 
 let
-  name = "tahoe-lafs-1.10.0";
+  name = "tahoe-lafs-1.10.2";
 in
 buildPythonPackage {
   inherit name;
   namePrefix = "";
 
   src = fetchurl {
-    url = "http://tahoe-lafs.org/source/tahoe-lafs/releases/allmydata-tahoe-1.10.0.tar.bz2";
-    sha256 = "1qng7j1vykk8zl5da9yklkljvgxfnjky58gcay6dypz91xq1cmcw";
+    url = "http://tahoe-lafs.org/source/tahoe-lafs/releases/allmydata-tahoe-1.10.2.tar.bz2";
+    sha256 = "1rvv0ik5biy7ji8pg56v0qycnggzr3k6dbg88n555nb6r4cxgmgy";
   };
 
   configurePhase = ''
