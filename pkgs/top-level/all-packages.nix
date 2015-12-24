@@ -2045,7 +2045,12 @@ let
 
   memtester = callPackage ../tools/system/memtester { };
 
-  minidlna = callPackage ../tools/networking/minidlna { };
+  minidlna = callPackage ../tools/networking/minidlna {
+    ffmpeg = ffmpeg.override {
+      xvidcore = null;
+      libvpx = null;
+    };
+  };
 
   minisign = callPackage ../tools/security/minisign { };
 
