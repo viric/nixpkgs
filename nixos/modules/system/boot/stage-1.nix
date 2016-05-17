@@ -56,6 +56,9 @@ let
       copy_bin_and_libs ${pkgs.lvm2}/sbin/dmsetup
       copy_bin_and_libs ${pkgs.lvm2}/sbin/lvm
 
+      # cache_check
+      copy_bin_and_libs ${pkgs.thin_provisioning_tools}/sbin/pdata_tools
+
       # Add RAID mdadm tool.
       copy_bin_and_libs ${pkgs.mdadm}/sbin/mdadm
       copy_bin_and_libs ${pkgs.mdadm}/sbin/mdmon
@@ -126,6 +129,7 @@ let
       $out/bin/udevadm --version
       $out/bin/dmsetup --version 2>&1 | tee -a log | grep -q "version:"
       LVM_SYSTEM_DIR=$out $out/bin/lvm version 2>&1 | tee -a log | grep -q "LVM"
+      $out/bin/pdata_tools cache_check -V
       $out/bin/mdadm --version
 
       ${config.boot.initrd.extraUtilsCommandsTest}

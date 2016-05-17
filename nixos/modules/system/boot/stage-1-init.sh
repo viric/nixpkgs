@@ -170,6 +170,9 @@ udevadm settle
 # Load boot-time keymap before any LVM/LUKS initialization
 @extraUtils@/bin/busybox loadkmap < "@busyboxKeymap@"
 
+# Prepare /usr/sbin/cache_check for lvm
+mkdir -p /usr/sbin
+ln -sf /bin/pdata_tools /usr/sbin/cache_check
 
 # XXX: Use case usb->lvm will still fail, usb->luks->lvm is covered
 @preLVMCommands@
