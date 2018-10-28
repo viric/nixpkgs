@@ -37,7 +37,7 @@ let
   srcs = import ./srcs.nix { inherit fetchurl; inherit mirror; };
 
   patches = {
-    qtbase = [ ./qtbase.patch ] ++
+    qtbase = [ ./qtbase.patch ./qtbase2.patch ] ++
       optionals stdenv.isDarwin [ ./qtbase-darwin.patch
                                   ./restore-pc-files.patch ];
     qtdeclarative = [ ./qtdeclarative.patch ];
