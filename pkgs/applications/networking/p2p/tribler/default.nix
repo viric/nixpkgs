@@ -3,11 +3,11 @@
 
 stdenv.mkDerivation rec {
   pname = "tribler";
-  version = "7.3.2";
+  version = "7.4.4";
 
   src = fetchurl {
     url = "https://github.com/Tribler/tribler/releases/download/v${version}/Tribler-v${version}.tar.xz";
-    sha256 = "17brdklzgaknpn5vfiy7iqm6dhqq9wp1iqhf0wg3ks9p4bx7177a";
+    sha256 = "0hxiyf1k07ngym2p8r1b5mcx1y2crkyz43gi9sgvsvsyijyaff3p";
   };
 
   buildInputs = [
@@ -26,7 +26,6 @@ stdenv.mkDerivation rec {
     pythonPackages.pyasn1
     pythonPackages.requests
     pythonPackages.setuptools
-    pythonPackages.m2crypto
     pythonPackages.pyqt5
     pythonPackages.chardet
     pythonPackages.cherrypy
@@ -39,7 +38,6 @@ stdenv.mkDerivation rec {
     pythonPackages.feedparser
     pythonPackages.service-identity
     pythonPackages.psutil
-    pythonPackages.meliae
     pythonPackages.sip
     pythonPackages.pillow
     pythonPackages.networkx

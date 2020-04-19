@@ -20914,7 +20914,9 @@ in
 
   treesheets = callPackage ../applications/office/treesheets { wxGTK = wxGTK31; };
 
-  tribler = callPackage ../applications/networking/p2p/tribler { };
+  tribler = callPackage ../applications/networking/p2p/tribler {
+    pythonPackages = python3Packages;
+  };
 
   trojita = libsForQt5.callPackage ../applications/networking/mailreaders/trojita { };
 
