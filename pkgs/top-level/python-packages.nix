@@ -859,6 +859,8 @@ in {
 
   poetry = callPackage ../development/python-modules/poetry { };
 
+  pony = callPackage ../development/python-modules/pony { };
+
   postorius = disabledIf (!isPy3k) (callPackage ../servers/mail/mailman/postorius.nix { });
 
   pplpy = callPackage ../development/python-modules/pplpy { };
@@ -1333,6 +1335,8 @@ in {
 
   aiohttp = callPackage ../development/python-modules/aiohttp { };
 
+  aiohttp-apispec = callPackage ../development/python-modules/aiohttp-apispec { };
+
   aiohttp-cors = callPackage ../development/python-modules/aiohttp-cors { };
 
   aiohttp-jinja2 = callPackage ../development/python-modules/aiohttp-jinja2 { };
@@ -1400,6 +1404,8 @@ in {
   antlr4-python3-runtime = callPackage ../development/python-modules/antlr4-python3-runtime {};
 
   apipkg = callPackage ../development/python-modules/apipkg {};
+
+  apispec = callPackage ../development/python-modules/apispec {};
 
   appdirs = callPackage ../development/python-modules/appdirs { };
 
@@ -5099,6 +5105,8 @@ in {
   vsts = callPackage ../development/python-modules/vsts { };
 
   vsts-cd-manager = callPackage ../development/python-modules/vsts-cd-manager { };
+
+  webargs  = callPackage ../development/python-modules/webargs { };
 
   weasyprint = callPackage ../development/python-modules/weasyprint { };
 
