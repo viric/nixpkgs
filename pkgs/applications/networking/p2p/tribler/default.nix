@@ -3,11 +3,11 @@
 
 stdenv.mkDerivation rec {
   pname = "tribler";
-  version = "7.4.4";
+  version = "7.5.0-rc5";
 
   src = fetchurl {
     url = "https://github.com/Tribler/tribler/releases/download/v${version}/Tribler-v${version}.tar.xz";
-    sha256 = "0hxiyf1k07ngym2p8r1b5mcx1y2crkyz43gi9sgvsvsyijyaff3p";
+    sha256 = "19b11cy3fnza5846lr2s5gxacqav212gs9w2hpz327f4p3p1pzj3";
   };
 
   nativeBuildInputs = [
@@ -42,6 +42,9 @@ stdenv.mkDerivation rec {
     python3Packages.pony
     python3Packages.lz4
     python3Packages.pyqtgraph
+    python3Packages.pyyaml
+    python3Packages.aiohttp
+    python3Packages.aiohttp-apispec
 
     # there is a BTC feature, but it requires some unclear version of
     # bitcoinlib, so this doesn't work right now.
@@ -50,9 +53,9 @@ stdenv.mkDerivation rec {
 
   postPatch = ''
     ${stdenv.lib.optionalString enablePlayer ''
-      substituteInPlace "./TriblerGUI/vlc.py" --replace "ctypes.CDLL(p)" "ctypes.CDLL('${libvlc}/lib/libvlc.so')"
-      substituteInPlace "./TriblerGUI/widgets/videoplayerpage.py" --replace "if vlc and vlc.plugin_path" "if vlc"
-      substituteInPlace "./TriblerGUI/widgets/videoplayerpage.py" --replace "os.environ['VLC_PLUGIN_PATH'] = vlc.plugin_path" "os.environ['VLC_PLUGIN_PATH'] = '${libvlc}/lib/vlc/plugins'"
+      substituteInPlace "./src/tribler-gui/tribler_gui/vlc.py" --replace "ctypes.CDLL(p)" "ctypes.CDLL('${libvlc}/lib/libvlc.so')"
+      substituteInPlace "./src/tribler-gui/tribler_gui/widgets/videoplayerpage.py" --replace "if vlc and vlc.plugin_path" "if vlc"
+      substituteInPlace "./src/tribler-gui/tribler_gui/widgets/videoplayerpage.py" --replace "os.environ['VLC_PLUGIN_PATH'] = vlc.plugin_path" "os.environ['VLC_PLUGIN_PATH'] = '${libvlc}/lib/vlc/plugins'"
     ''}
   '';
 
@@ -63,11 +66,11 @@ stdenv.mkDerivation rec {
     cp -prvd ./* $out/
     makeWrapper ${python3Packages.python}/bin/python $out/bin/tribler \
         --set QT_QPA_PLATFORM_PLUGIN_PATH ${qt5.qtbase.bin}/lib/qt-*/plugins/platforms \
-        --set _TRIBLERPATH $out \
-        --set PYTHONPATH $out:$program_PYTHONPATH \
+        --set _TRIBLERPATH $out/src \
+        --set PYTHONPATH $out/src/tribler-core:$out/src/tribler-common:$out/src/tribler-gui:$program_PYTHONPATH \
         --set NO_AT_BRIDGE 1 \
         --run 'cd $_TRIBLERPATH' \
-        --add-flags "-O $out/run_tribler.py" \
+        --add-flags "-O $out/src/run_tribler.py" \
         ${stdenv.lib.optionalString enablePlayer ''
           --prefix LD_LIBRARY_PATH : ${libvlc}/lib
         ''}

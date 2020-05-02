@@ -204,6 +204,8 @@ in {
 
   aiohttp = callPackage ../development/python-modules/aiohttp { };
 
+  aiohttp-apispec = callPackage ../development/python-modules/aiohttp-apispec { };
+
   aiohttp-cors = callPackage ../development/python-modules/aiohttp-cors { };
 
   aiohttp-jinja2 = callPackage ../development/python-modules/aiohttp-jinja2 { };
@@ -6443,7 +6445,15 @@ in {
 
   sievelib = callPackage ../development/python-modules/sievelib { };
 
+<<<<<<< HEAD
   signedjson = callPackage ../development/python-modules/signedjson { };
+||||||| parent of 0499b8b5e16... Tribler 7.5.0-rc5
+  weasyprint = callPackage ../development/python-modules/weasyprint { };
+=======
+  webargs  = callPackage ../development/python-modules/webargs { };
+
+  weasyprint = callPackage ../development/python-modules/weasyprint { };
+>>>>>>> 0499b8b5e16... Tribler 7.5.0-rc5
 
   sigtools = callPackage ../development/python-modules/sigtools { };
 
