@@ -3607,14 +3607,10 @@ in {
 
   folium = callPackage ../development/python-modules/folium { };
 
-  fontforge = (toPythonModule (pkgs.fontforge.override {
+  fontforge = disabledIf (!isPy3k) (toPythonModule (pkgs.fontforge.override {
     withPython = true;
     inherit python;
-  })).overrideAttrs (old: {
-    meta = old.meta // {
-      broken = isPy38;
-    };
-  });
+  }));
 
   fonttools = callPackage ../development/python-modules/fonttools { };
 
@@ -4652,6 +4648,8 @@ in {
   partd = callPackage ../development/python-modules/partd { };
 
   patch = callPackage ../development/python-modules/patch { };
+
+  patch-ng = callPackage ../development/python-modules/patch-ng { };
 
   pathos = callPackage ../development/python-modules/pathos { };
 

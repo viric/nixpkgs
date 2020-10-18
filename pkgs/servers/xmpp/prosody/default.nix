@@ -14,12 +14,12 @@ with stdenv.lib;
 
 
 stdenv.mkDerivation rec {
-  version = "0.11.3"; # also update communityModules
+  version = "0.11.6"; # also update communityModules
   pname = "prosody";
 
   src = fetchurl {
     url = "https://prosody.im/downloads/source/${pname}-${version}.tar.gz";
-    sha256 = "11xz4milv2962qf75vrdwsvd8sy2332nf69202rmvz5989pvvnng";
+    sha256 = "0m8p2kwiy4l87ifpygricpyixi1vpx6j1jb6ki1zi4az3iixp8fd";
   };
 
   # A note to all those merging automated updates: Please also update this
@@ -27,8 +27,8 @@ stdenv.mkDerivation rec {
   # version.
   communityModules = fetchhg {
     url = "https://hg.prosody.im/prosody-modules";
-    rev = "b54e98d5c4a1";
-    sha256 = "0bzn92j48krb2zhp9gn5bbn5sg0qv15j5lpxfszwqdln3lpmrvzg";
+    rev = "e77122025080";
+    sha256 = "1pjax8lzgcwcn3mq5q4kbwfyyzaifqcc3a0s4rl9gib5rhwddybh";
   };
 
   buildInputs = [
@@ -67,8 +67,8 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Open-source XMPP application server written in Lua";
     license = licenses.mit;
-    homepage = https://prosody.im;
+    homepage = "https://prosody.im";
     platforms = platforms.linux;
-    maintainers = with maintainers; [ fpletz globin ];
+    maintainers = with maintainers; [ fpletz globin ninjatrappeur ];
   };
 }

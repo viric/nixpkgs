@@ -384,7 +384,7 @@ self: super: {
   static-resources = dontCheck super.static-resources;
   strive = dontCheck super.strive;                      # fails its own hlint test with tons of warnings
   svndump = dontCheck super.svndump;
-  tar = dontCheck super.tar; #http://hydra.nixos.org/build/25088435/nixlog/2 (fails only on 32-bit)
+  tar = dontCheck super.tar; #https://hydra.nixos.org/build/25088435/nixlog/2 (fails only on 32-bit)
   th-printf = dontCheck super.th-printf;
   thumbnail-plus = dontCheck super.thumbnail-plus;
   tickle = dontCheck super.tickle;
@@ -1212,9 +1212,6 @@ self: super: {
 
   # These packages needs network 3.x, which is not in LTS-13.x.
   network-bsd_2_8_1_0 = super.network-bsd_2_8_1_0.override { network = self.network_3_0_1_1; };
-  lambdabot-core = super.lambdabot-core.overrideScope (self: super: { network = self.network_3_0_1_1; hslogger = self.hslogger_1_3_0_0; });
-  lambdabot-reference-plugins = super.lambdabot-reference-plugins.overrideScope (self: super: { network = self.network_3_0_1_1; hslogger = self.hslogger_1_3_0_0; });
-  lambdabot-haskell-plugins = super.lambdabot-haskell-plugins.overrideScope (self: super: { network = self.network_3_0_1_1; });
 
   # Some tests depend on a postgresql instance
   # Haddock failure: https://github.com/haskell/haddock/issues/979
@@ -1429,6 +1426,31 @@ self: super: {
   amqp-utils = super.amqp-utils.override {
     amqp = dontCheck super.amqp_0_19_1;
   };
+
+  # HsYAML-aeson depends on a more modern version of HsYAML than the one
+  # available in stackage's LTS 14.23
+  HsYAML-aeson = super.HsYAML-aeson.override {
+    HsYAML = self.HsYAML_0_2_1_0;
+  };
+
+  stylish-haskell = super.stylish-haskell.override {
+    HsYAML = self.HsYAML_0_2_1_0;
+  };
+
+  # Needed for ghcide
+  haskell-lsp_0_19_0_0 = super.haskell-lsp_0_19_0_0.override {
+    haskell-lsp-types = self.haskell-lsp-types_0_19_0_0;
+  };
+
+  # this will probably need to get updated with every ghcide update,
+  # we need an override because ghcide is tracking haskell-lsp closely.
+  ghcide = dontCheck (super.ghcide.override rec {
+    haskell-lsp-types = self.haskell-lsp-types_0_19_0_0;
+    haskell-lsp = self.haskell-lsp_0_19_0_0;
+    regex-tdfa = self.regex-tdfa_1_3_1_0;
+    haddock-library = self.haddock-library_1_8_0;
+  });
+
 
   # 20.03 broken packages
 
