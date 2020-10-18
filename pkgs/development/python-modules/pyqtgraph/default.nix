@@ -3,7 +3,7 @@
 , fetchPypi
 , scipy
 , numpy
-, pyqt4
+, pyqt
 , pyopengl
 }:
 
@@ -16,9 +16,9 @@ buildPythonPackage rec {
     sha256 = "0p5k73wjfh0zzjvby8b5107cx7x0c2rdj66zh1nc8y95i0anf2na";
   };
 
-  propagatedBuildInputs = [ scipy numpy pyqt4 pyopengl ];
+  propagatedBuildInputs = [ scipy numpy pyqt pyopengl ];
 
-  doCheck = false;  # "PyQtGraph requires either PyQt4 or PySide; neither package could be imported."
+  doCheck = false;  # "PyQtGraph requires either PyQt4 or PyQt5 or PySide; neither package could be imported."
 
   meta = with stdenv.lib; {
     description = "Scientific Graphics and GUI Library for Python";
