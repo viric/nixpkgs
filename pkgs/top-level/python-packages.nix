@@ -5025,7 +5025,13 @@ in {
 
   pyptlib = callPackage ../development/python-modules/pyptlib { };
 
-  pyqtgraph = callPackage ../development/python-modules/pyqtgraph { };
+  pyqtgraph = callPackage ../development/python-modules/pyqtgraph {
+    pyqt = self.pyqt4;
+  };
+
+  pyqtgraph5 = callPackage ../development/python-modules/pyqtgraph {
+    pyqt = self.pyqt5;
+  };
 
   PyStemmer = callPackage ../development/python-modules/pystemmer {};
 
