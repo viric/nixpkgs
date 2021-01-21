@@ -26605,6 +26605,8 @@ in
 
   brightnessctl = callPackage ../misc/brightnessctl { };
 
+  btsdu = callPackage ../tools/misc/btsdu { };
+
   cached-nix-shell = callPackage ../tools/nix/cached-nix-shell {};
 
   calaos_installer = libsForQt514.callPackage ../misc/calaos/installer {};
