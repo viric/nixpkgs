@@ -1,11 +1,14 @@
-{stdenv, fetchurl, zlib, openssl}:
+{stdenv, fetchFromGitHub, zlib, openssl}:
 stdenv.mkDerivation rec {
-  version = "0.6.1";
+  version = "1.1.0";
   pname = "libre";
-  src = fetchurl {
-    url = "http://www.creytiv.com/pub/re-${version}.tar.gz";
-    sha256 = "0hzyc0hdlw795nyx6ik7h2ihs8wapbj32x8c40xq0484ciwzqnyd";
+  src = fetchFromGitHub {
+    owner  = "baresip";
+    repo   = "re";
+    rev    = "v${version}";
+    sha256 = "0p4rmch6rxf1igkyb9mdi86s4kp3xx05c9irv8ixym3f5xlkk7id";
   };
+  enableParallelBuilding = true;
   buildInputs = [ zlib openssl ];
   makeFlags = [ "USE_ZLIB=1" "USE_OPENSSL=1" "PREFIX=$(out)" ]
   ++ stdenv.lib.optional (stdenv.cc.cc != null) "SYSROOT_ALT=${stdenv.cc.cc}"
